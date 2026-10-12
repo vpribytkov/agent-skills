@@ -12,6 +12,14 @@ fi
 
 mkdir -p "$TARGET_ROOT"
 
+for source in "$SOURCE_ROOT"/*; do
+  [ -d "$source" ] || continue
+  if [ -f "$source/profile.example.yaml" ] && [ ! -e "$source/profile.yaml" ]; then
+    cp "$source/profile.example.yaml" "$source/profile.yaml"
+    printf '[init] %s profile.yaml from profile.example.yaml\n' "$(basename "$source")"
+  fi
+done
+
 created=0
 existing=0
 collisions=0
