@@ -103,7 +103,7 @@ Then rerun the installer on each machine. Existing links are kept; only missing 
 
 Keep machine-specific values, credentials, private service identifiers, and other secrets out of this repository.
 
-If a skill needs machine-local configuration (for example a home/work factory profile), keep the reusable skill definition in Git and treat the machine-local configuration separately. Do not commit secrets to this public repository.
+If a skill needs machine-local configuration, keep a tracked `profile.example.yaml` (or equivalent template) and an ignored local `profile.yaml`. The installers initialize the local profile only when it is missing and never overwrite it. Do not commit secrets to this public repository.
 
 ## Design goals
 

@@ -14,6 +14,15 @@ if (-not (Test-Path -LiteralPath $SourceRoot -PathType Container)) {
 $TargetRoot = [System.IO.Path]::GetFullPath($TargetRoot)
 New-Item -ItemType Directory -Force -Path $TargetRoot | Out-Null
 
+Get-ChildItem -LiteralPath $SourceRoot -Directory | ForEach-Object {
+    $exampleProfile = Join-Path $_.FullName "profile.example.yaml"
+    $localProfile = Join-Path $_.FullName "profile.yaml"
+    if ((Test-Path -LiteralPath $exampleProfile -PathType Leaf) -and -not (Test-Path -LiteralPath $localProfile)) {
+        Copy-Item -LiteralPath $exampleProfile -Destination $localProfile
+        Write-Host "[init] $($_.Name) profile.yaml from profile.example.yaml"
+    }
+}
+
 $created = 0
 $existing = 0
 $collisions = 0

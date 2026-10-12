@@ -1,0 +1,96 @@
+# Machine-local Software Factory profile template.
+# Copy to profile.yaml beside SKILL.md and customize for this computer.
+# profile.yaml is intentionally ignored by Git.
+
+version: 1
+
+work_items:
+  provider: github
+  identifiers:
+    owner: null
+    repository: from_git_origin
+    project_id: null
+    status_field_id: null
+    status_options: {}
+  operations:
+    read: 'Read the configured work item, comments, dependencies and linked PRs.'
+    candidates: |
+      Read all current candidate work items from the configured provider,
+      including pagination and dependency context needed to assess readiness.
+    active: 'Find unfinished factory-start records in the configured provider scope.'
+    record: 'Record durable factory receipts in the configured work-item system.'
+  transitions:
+    started: 'Record FACTORY START with item/repository/change/PR links as available.'
+    suspended: 'Record FACTORY SUSPENDED.'
+    ready_to_merge: 'Record READY TO MERGE with finalized PR and archive links.'
+    merged: 'No factory action by default; final merge remains human-controlled.'
+
+repository:
+  context:
+    - AGENTS.md
+    - openspec/config.yaml
+    - openspec/specs/
+  openspec_command: openspec
+  branch_template: 'issue/{item_number}-{slug}'
+
+prioritization_prompt: |
+  Replace this block with the exact prioritization policy for this machine.
+  /factory next must use it verbatim and must not invent a second ranking policy.
+
+blocks:
+  explore:
+    enabled: true
+    model: gpt-6.1-sol
+    reasoning: high
+    skills:
+      requirements: grill-with-docs
+      investigate: openspec-explore
+      propose: openspec-propose
+      summary: openspec-summarize-change
+      spec_review: openspec-review-change
+      revise: openspec-update-change
+
+  develop:
+    enabled: true
+    model: gpt-6-luna
+    reasoning: high
+    escalation:
+      model: gpt-6.1-sol
+      reasoning: high
+      when: Difficult cross-component or recovery work.
+    skills:
+      apply: openspec-apply-change
+      pr: create-pr
+    commands:
+      verify: 'Follow the current repository instructions and canonical verification commands.'
+
+  review:
+    enabled: true
+    model: gpt-6.1-sol
+    reasoning: high
+    skills:
+      review: code-review-skill
+
+  owner_review:
+    enabled: true
+    model: gpt-6.1-sol
+    reasoning: high
+    skills:
+      archive: openspec-archive-change
+
+review:
+  provider: skill
+  identifiers: {}
+  operations:
+    read: 'Read the current PR diff, reviews, comments and checks at its current head/base.'
+    publish: 'Publish material findings and PASS/CHANGES in the configured PR system, recording reviewed head/base.'
+
+pr:
+  provider: github
+  identifiers:
+    repository: from_git_origin
+    base: main
+  operations:
+    read: 'Read the linked PR, head/base, draft state, reviews and required checks.'
+    update: 'Update the same PR with the current implementation and verification summary.'
+    ready: 'Mark the PR ready using the configured provider tooling.'
