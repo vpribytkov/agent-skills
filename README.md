@@ -52,7 +52,7 @@ To install into another skill store:
 ### macOS / Linux
 
 ```bash
-./install.sh
+sh ./install.sh
 ```
 
 The default target is:
@@ -64,7 +64,7 @@ The default target is:
 Pass another target as the first argument when needed:
 
 ```bash
-./install.sh ~/.claude/skills
+sh ./install.sh ~/.claude/skills
 ```
 
 ## Collision policy
