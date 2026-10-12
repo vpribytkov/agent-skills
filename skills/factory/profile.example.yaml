@@ -1,8 +1,15 @@
 # Machine-local Software Factory profile template.
 # Copy to profile.yaml beside SKILL.md and customize for this computer.
 # profile.yaml is intentionally ignored by Git.
+# Bind the real external review checks and prioritization policy before use.
 
 version: 1
+
+state:
+  provider: work_items
+
+execution:
+  concurrent_tasks: false
 
 work_items:
   provider: github
@@ -26,6 +33,9 @@ work_items:
     merged: 'No factory action by default; final merge remains human-controlled.'
 
 repository:
+  scope: current_checkout
+  worktree: when_parallel
+  openspec_store: null
   context:
     - AGENTS.md
     - openspec/config.yaml
@@ -77,19 +87,35 @@ blocks:
     reasoning: high
     skills:
       archive: openspec-archive-change
+    commands:
+      sync: 'Run the inline spec-sync workflow furnished by openspec-archive-change.'
 
 review:
-  provider: skill
+  provider: skill_then_external
   identifiers: {}
   operations:
-    read: 'Read the current PR diff, reviews, comments and checks at its current head/base.'
-    publish: 'Publish material findings and PASS/CHANGES in the configured PR system, recording reviewed head/base.'
+    read: 'Read the whole local candidate, relevant untracked files, accepted change and verification against the resolved base.'
+    publish: 'Record local findings and PASS/CHANGES in the configured receipt store, bound to candidate contents and base.'
+  external:
+    provider: ci
+    identifiers:
+      required_review_checks: [] # Fill with actual review check IDs/names; empty is a blocker.
+      verdicts:
+        pending: 'A required review check is queued/running or its findings are not yet available.'
+        changes: 'Current published review requests changes under the configured priority scope.'
+        pass: 'All configured review checks accepted the current head/base with no outstanding required findings.'
+        failure: 'Missing checks, failed/cancelled runs, access errors, incomplete evidence or timeout are blockers.'
+    operations:
+      read: 'Read actual required review runs and published findings for the current PR head/base through the configured PR/CI provider.'
+      trigger: 'Use the existing PR/commit-triggered review; bind a supported explicit trigger if the repository requires one.'
+    poll_interval_seconds: 120
+    timeout_seconds: 3600
 
 pr:
   provider: github
   identifiers:
     repository: from_git_origin
-    base: main
+    base: from_remote_default
   operations:
     read: 'Read the linked PR, head/base, draft state, reviews and required checks.'
     update: 'Update the same PR with the current implementation and verification summary.'
