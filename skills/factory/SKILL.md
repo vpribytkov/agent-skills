@@ -257,13 +257,15 @@ the configured transition means ready for a human. **Never auto-merge in v0.**
 
 ## Installation and reporting
 
-The source and distribution both include `profile.yaml` with public home defaults.
-For a first install, copy this folder into the machine's user skill directory;
-the included profile becomes that machine's active configuration. For updates,
-extract a ZIP to staging and replace only SKILL.md, agents/ and references/;
-preserve the existing active profile.yaml. Do not unpack over an existing profile
-or create another active profile. Keep machine credentials out of profiles and
-source control; use existing authenticated tools.
+The repository includes `profile.example.yaml`, while the active machine-local
+`profile.yaml` is intentionally untracked. On first install, if `profile.yaml`
+is absent, initialize it from the example and then customize it for that computer.
+Never overwrite an existing active profile during install or update.
+
+Repository-managed skill files may be updated through Git normally; because the
+installed skill points at this checkout, the untracked profile remains beside
+`SKILL.md` and survives `git pull`. Keep machine credentials, private service
+identifiers and secrets out of tracked files; use existing authenticated tools.
 
 Report current block, concrete outcome, blocker/next action and actual proof.
 Distinguish syntax/dry-run validation from a real issue-to-READY run and repository
