@@ -11,7 +11,9 @@ description: "Prepare local changes and create a pull request by checking scope 
 4. Do not run verification solely to create a PR. Reuse existing results when available; otherwise report missing verification without triggering additional checks. Never claim an unverified result.
 5. Stage only files in scope. Create a narrow commit with a clear imperative subject; do not rewrite suitable existing commits unless asked.
 6. Push the current branch with upstream tracking. Never force-push without explicit approval.
-7. Open a draft PR unless the user explicitly requests ready-for-review. Use the project template when required; otherwise write the description in Russian with these sections:
+7. Open a draft PR unless the user explicitly requests ready-for-review.
+   Base the PR title on the associated task when one is established by the current context. Preserve its exact title and include its identifier, if available, without translating or rewriting it. Otherwise, use a concise descriptive title.
+   Use the project template when required; otherwise write the description in Russian with these sections:
    - `## Что изменено` — briefly describe what was added, removed, fixed, or changed, focusing on observable behavior.
    - `## Зачем это нужно` — explain the problem being solved and why the change matters.
    - `## Как реализовано` — briefly explain non-obvious implementation decisions relevant to the reviewer.
