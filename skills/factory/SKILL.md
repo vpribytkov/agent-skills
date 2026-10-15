@@ -254,6 +254,25 @@ report the actual blocker. A successful unrelated CI/build is not review accepta
 
 ## Review
 
+Append the text inside the following fenced block verbatim to every skill-based
+reviewer task, including re-review, alongside the usual task context and
+applicable instructions:
+
+```text
+Before issuing the verdict, revisit material failure hypotheses raised during
+this review. Resolve each with a supported finding, concrete refuting evidence,
+or an explicit unresolved limitation; do not silently drop a hypothesis.
+
+Distinguish reading relevant code from validating the behavior. Do not claim
+a path was checked beyond the last production boundary actually traced or
+exercised. If an unresolved hypothesis materially limits the verdict, state
+that limitation rather than declaring the affected path verified.
+
+Use source tracing when decisive; otherwise use the smallest faithful focused
+check. Do not invent hypotheses, require tests for every concern, or create a
+separate review ledger.
+```
+
 The standard shared flow is local review before PR creation, then external/CI
 review after PR creation, selected by `review.provider: skill_then_external`.
 Existing explicit `skill` and `ci` profiles keep their earlier single-provider
