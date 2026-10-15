@@ -259,6 +259,15 @@ reviewer task, including re-review, alongside the usual task context and
 applicable instructions:
 
 ```text
+Review both the quality of the solution itself and how it integrates with the
+existing system.
+
+Do not evaluate the changed code in isolation: for materially changed behavior,
+trace its effects through existing callers, state transitions,
+persistence/recovery, and the next normal system decision. Verify that existing
+supported scenarios, including adjacent or optional flows, still compose
+correctly with the change.
+
 Before issuing the verdict, revisit material failure hypotheses raised during
 this review. Resolve each with a supported finding, concrete refuting evidence,
 or an explicit unresolved limitation; do not silently drop a hypothesis.
