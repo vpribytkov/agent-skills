@@ -266,7 +266,11 @@ Do not evaluate the changed code in isolation: for materially changed behavior,
 trace its effects through existing callers, state transitions,
 persistence/recovery, and the next normal system decision. Verify that existing
 supported scenarios, including adjacent or optional flows, still compose
-correctly with the change.
+correctly with the change. Actively try to falsify important state-transition
+assumptions with plausible production sequences: re-enter a previously
+completed phase, observe a rejected command with a deferred native effect,
+or resume after an interrupted action. Trace only cases supported by the
+changed flow and follow the resulting state to its next decision.
 
 Before issuing the verdict, revisit material failure hypotheses raised during
 this review. Resolve each with a supported finding, concrete refuting evidence,
