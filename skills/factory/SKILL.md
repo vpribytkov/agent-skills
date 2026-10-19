@@ -98,6 +98,8 @@ evidence. Use the repository's structural tools when required. Discover language
 toolchain, canonical verification and Git/PR conventions from current sources;
 do not transplant them from another repository or this skill's installation repo.
 
+For a new issue branch, use `<issue-id>-<slug>`: take the issue ID from the work-item provider (not a number embedded in its title), lowercase it, and append a short, lowercase ASCII kebab-case slug describing the work. Use no prefix, slash or redundant identifier. Reuse an existing branch for the same job rather than renaming it on resume. If project rules mandate a different branch name, follow them.
+
 With `repository.worktree: when_parallel`, use the open checkout for ordinary
 work. If another task occupies it, create or reuse a task-specific worktree and
 branch from the resolved base; do not copy the other task's uncommitted changes.
