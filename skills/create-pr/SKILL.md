@@ -18,6 +18,8 @@ description: "Prepare local changes and create a pull request by checking scope 
    - `## Зачем это нужно` — explain the problem being solved and why the change matters.
    - `## Как реализовано` — briefly explain non-obvious implementation decisions relevant to the reviewer.
    Include `## Связанные изменения` only when dependent PRs exist.
+   Describe the actual change relative to existing behavior; do not present existing capabilities as newly added. Make the supported outcome and any material scope boundary clear without implying broader automation.
+   Explain non-obvious implementation decisions through their reviewer-relevant purpose or consequence, rather than listing mechanisms. For complex behavioral changes, use a short concrete example when it clarifies the outcome; do not force examples into trivial PRs.
    Keep the description concise and reviewer-oriented. Omit redundant implementation details, generic filler, development history, test results, logs, commit hashes, and verification evidence.
    Mention risks, limitations, or intentional contract changes only when they materially affect the reviewer’s understanding.
 8. Report the PR URL and any material blockers or remaining risks. Never merge or deploy without separate explicit approval.
