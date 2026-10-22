@@ -62,7 +62,6 @@
 - When debugging bugs, regressions, incidents, latency, logs/metrics, or RCA, read `<agent-root>/workflows/investigation-rca.md`.
 - When working on Go/service/DB integration tests, read `<agent-root>/workflows/integration-tests.md`.
 - When changing runtime behavior, metrics, logs, traces, or production readiness, read `<agent-root>/workflows/observability.md`.
-- When working with OpenSpec, including Jira/change naming and service mapping, read `<agent-root>/workflows/openspec.md`.
 - When writing a PR title/description or creating/updating a PR, use `create-pr`.
 - Load routed workflow files only when relevant; never preload them.
 - When a routed workflow applies, read the file completely before relying on it. If a read is partial or truncated, continue from the missing range before proceeding.

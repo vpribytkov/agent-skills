@@ -11,8 +11,7 @@ agent-skills/
 │   ├── planning.md
 │   ├── investigation-rca.md
 │   ├── integration-tests.md
-│   ├── observability.md
-│   └── openspec.md
+│   └── observability.md
 ├── skills/
 │   ├── coding-quality/
 │   ├── create-pr/
