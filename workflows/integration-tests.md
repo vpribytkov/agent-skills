@@ -13,7 +13,7 @@ For a method or behavior, use one test function with multiple cases instead of s
 Prefer:
 
 ```go
-func TestService_ProcessVinItemUpdateIntegration(t *testing.T) {
+func TestService_ProcessIntegration(t *testing.T) {
     cases := []struct {
         name    string
         prepare func(ctx context.Context, t *testing.T, deps testDeps) input
@@ -37,23 +37,23 @@ Avoid creating separate top-level test functions for each case when they test th
 Avoid:
 
 ```go
-TestService_ProcessVinItemUpdateIntegration_savesPersonalData
-TestService_ProcessVinItemUpdateIntegration_skipsEmptyOldVIN
-TestService_ProcessVinItemUpdateIntegration_rollsBackPersonalDataOnStaleEvent
+TestService_ProcessIntegration_persistsExpectedState
+TestService_ProcessIntegration_skipsInvalidInput
+TestService_ProcessIntegration_rollsBackOnStaleState
 ```
 
 Prefer:
 
 ```go
-TestService_ProcessVinItemUpdateIntegration
+TestService_ProcessIntegration
 ```
 
 with named table cases:
 
 ```go
-"saves personal data"
-"skips empty old VIN"
-"rolls back personal data on stale event"
+"persists expected state"
+"skips invalid input"
+"rolls back on stale state"
 ```
 
 ## Scenario readability
@@ -117,21 +117,9 @@ Before adding a mock:
 3. If a new mock is required, generate it using the project's standard tooling.
 4. Do not hand-write bespoke mocks unless nearby project tests already use that pattern or generation is unavailable.
 
-For this codebase, prefer existing mock generation workflows such as:
+Prefer the project's existing mock-generation workflow.
 
-```bash
-avito codegen
-```
-
-or:
-
-```bash
-make mockery
-```
-
-Use the command that matches the existing project pattern.
-
-If unsure which generator is standard, inspect nearby mocks, Makefile targets, codegen config, or project instructions before creating a mock.
+If unsure which generator is standard, inspect nearby generated mocks, build targets, code-generation configuration, or project instructions before creating a mock.
 
 ## Existing pattern first
 
@@ -155,7 +143,7 @@ Run the narrowest reliable integration test command first.
 Prefer targeted commands such as:
 
 ```bash
-go test -tags=integration ./internal/integration_tests -run TestService_ProcessVinItemUpdateIntegration
+go test -tags=integration ./path/to/package -run TestService_ProcessIntegration
 ```
 
 Then broaden only when needed.

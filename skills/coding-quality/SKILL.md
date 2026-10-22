@@ -225,6 +225,8 @@ Follow the project's existing testing rules and workflow.
 
 Tests should make materially different behavior and outcomes visible.
 
+Keep domain-relevant inputs and expected outcomes visible at the test case level. Use helpers to hide plumbing, not the behavior being verified.
+
 When business logic contains distinct branches, verify the branches required by the task rather than only the combined happy path.
 
 This skill does not require TDD or prescribe the order in which implementation and tests must be written.
