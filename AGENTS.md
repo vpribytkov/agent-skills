@@ -33,7 +33,6 @@
 ## Tooling
 
 - **OpenSpec** — it is already installed. On Windows use only `& "$env:APPDATA\\npm\\openspec.cmd" <arguments>` with `sandbox_permissions="require_escalated"`; do not use PATH, `npx`, or reinstall it. Supported commands include `status --change '<change>' --json`, `instructions apply --change '<change>' --json`, and `validate '<change>' --type change --strict`; do not use `validate --change`.
-- **Avito CLI** — in repositories that use it, prefer `avito fmt --compact`, `avito lint --compact`, and `avito service test --compact`. Otherwise use the repository's own commands; do not assume this CLI is installed everywhere.
 - **Go vendoring** — if Go commands fail due to a `vendor/` / `go.mod` mismatch, run `go mod vendor` and retry only when dependency-file changes are authorized and consistent with repository policy. For read-only/review/diagnosis tasks, report the blocker instead of changing files.
 - **Token-efficient inspection** — read focused ranges; start reviews with diff stat/name-only; inspect relevant hunks only; prefer `--unified=20` or less; batch deterministic independent operations.
   - prefer focused ranges and concise summaries over broad file/diff dumps. Batch deterministic independent operations only when each remains narrowly scoped and the combined output is predictably small. Do not combine unrelated search concepts into broad regex/grep queries merely to reduce tool-call count.
