@@ -67,7 +67,7 @@ The resulting layout for the selected harness is:
 └── workflows/  -> <repo>/workflows/
 ```
 
-The installer never replaces an existing target. If `AGENTS.md`, `skills/`, or `workflows/` already exists in the selected harness directory, installation stops with an error. Move or remove the old target explicitly, then rerun the installer.
+The installer never replaces an existing target. It checks all three targets independently: existing targets are reported as `[skip]`, missing targets are linked and reported as `[link]`, and link failures are reported as `[error]`. One occupied target does not prevent the installer from linking the others.
 
 Because all three targets point directly at this checkout, changes become visible after `git pull` without reinstalling.
 
