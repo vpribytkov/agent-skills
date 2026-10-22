@@ -25,6 +25,7 @@ Do not auto-select a profile by repo, hostname, environment or command argument.
 | `repository.worktree` | `never` does not create automatic worktrees; `when_parallel` creates/reuses one when another job occupies this repository's checkout. |
 | `repository.openspec_store` | Registered fallback store ID for projects without local OpenSpec; null means no configured fallback. Actual paths come from the CLI. |
 | `repository.openspec_command` | Machine's OpenSpec executable/path; preserve repository CLI constraints. |
+| `repository.openspec_change_template` | Optional factory-side OpenSpec change-name template used before the proposal skill. Null preserves the proposal skill's native name derivation. Supported placeholders: `{item}`, `{item_lower}`, `{repository}`, `{service}`, `{slug}`. |
 | `repository.branch_template` | Project branch convention; current repository instructions take precedence. |
 | `prioritization_prompt` | Exact ranking policy; use a YAML literal block scalar rather than a folded scalar. |
 | `blocks.<name>.enabled` | Enables a known block; only Review can be omitted in v0. |
@@ -62,8 +63,13 @@ Identifiers are opaque provider config. `from_git_origin` resolves the current
 repository from its actual Git remote, without assuming a host or path. Bind
 documented command placeholders (`repo`, `item`, `item_number`, `slug`, `change`,
 `pr`, `head`) from resolved current evidence. `{item}` means the canonical provider
-key (e.g. a Jira issue key), not arbitrary invocation text. Quote arguments for
-the actual shell; never evaluate item text as code or use a generic template/expression engine.
+key (e.g. a Jira issue key), not arbitrary invocation text. For
+`repository.openspec_change_template`, `{item_lower}` is that key lowercased,
+`{repository}` is the current repository name, `{service}` is the repository/service
+identity established by current project context (falling back to repository name),
+and `{slug}` is a short lowercase ASCII kebab-case description of the approved
+intent. Treat the template as simple placeholder substitution only; do not evaluate
+expressions or item text as code. Quote arguments for the actual shell.
 Operation descriptions may explain provider API/CLI invocation and pagination,
 but must not encode stage selection, repair, approval or finalization ordering.
 
@@ -91,6 +97,7 @@ but must not encode stage selection, repair, approval or finalization ordering.
   merge-blocking flag, so inspect findings rather than silently ignore lower priorities.
   For `review.external.provider: ci`, require nonempty actual review-check IDs;
   for another provider, validate that provider's real agent/check identifiers.
+- If `repository.openspec_change_template` is non-null, require a nonempty string using only the documented placeholders; reject unknown placeholders or expression syntax.
 - Require a known receipt provider and checkout policy. Filesystem receipts need
   a readable directory (a new directory may be initialized on a write invocation);
   `status` remains read-only. Receipt edits cannot manufacture approval or check results.
@@ -118,6 +125,9 @@ On that machine edit this same active file, preserving the common skill:
   concurrency must not put different tasks into the same writable checkout.
 - Bind the work PR provider, tools, base branch and finalization transitions, and
   that machine's available skills/models/OpenSpec executable.
+- Set `repository.openspec_change_template` when this machine needs a work-specific
+  change naming convention; for example `'{item_lower}-{service}-{slug}'`. Leave it
+  null on machines that should keep the proposal skill's native naming.
 
 Do not invent internal Jira/CI values on another machine. Unconfigured required
 bindings block that operation. The v0 human merge gate remains in SKILL.md; changing
