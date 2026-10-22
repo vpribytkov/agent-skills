@@ -1,0 +1,24 @@
+name: Installer contracts
+on:
+  pull_request:
+    paths:
+      - 'install.*'
+      - 'scripts/install-agents.*'
+      - 'instructions/**'
+      - 'tests/test_installers.py'
+      - '.github/workflows/installers.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  unix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 tests/test_installers.py
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python tests/test_installers.py --powershell powershell
+      - run: python tests/test_installers.py --powershell pwsh

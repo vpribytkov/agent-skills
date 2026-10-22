@@ -1,8 +1,15 @@
 param(
-    [string]$TargetRoot = (Join-Path $HOME ".agents\skills")
+    [string]$TargetRoot = (Join-Path $HOME ".agents\skills"),
+    [switch]$InstallAgents,
+    [ValidateSet("Link", "Copy")][string]$AgentsMode = "Link",
+    [switch]$ReplaceAgents,
+    [string]$CodexHome = $(if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $HOME ".codex" })
 )
 
 $ErrorActionPreference = "Stop"
+if (-not $InstallAgents -and ($ReplaceAgents -or $PSBoundParameters.ContainsKey("AgentsMode") -or $PSBoundParameters.ContainsKey("CodexHome"))) {
+    throw "AGENTS options require -InstallAgents."
+}
 
 $RepoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $SourceRoot = Join-Path $RepoRoot "skills"
@@ -65,4 +72,8 @@ Write-Host "Created: $created; already correct: $existing; collisions: $collisio
 
 if ($collisions -gt 0) {
     exit 2
+}
+
+if ($InstallAgents) {
+    & (Join-Path $RepoRoot "scripts\install-agents.ps1") -CodexHome $CodexHome -Mode $AgentsMode -Replace:$ReplaceAgents
 }
