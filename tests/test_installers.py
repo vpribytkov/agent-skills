@@ -73,7 +73,13 @@ class InstallerTests(unittest.TestCase):
                 cmd.append('--replace-agents')
             if codex is not None:
                 cmd += ['--codex-home', str(codex)]
-        result = subprocess.run(cmd, env=self.env, text=True, capture_output=True)
+        env = self.env.copy()
+        if args.powershell:
+            # A pwsh -> Python -> powershell chain otherwise inherits PS7 modules
+            # into Windows PowerShell and breaks built-in module autoloading.
+            env = {key: value for key, value in env.items()
+                   if key.casefold() != 'psmodulepath'}
+        result = subprocess.run(cmd, env=env, text=True, capture_output=True)
         if success:
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         else:
@@ -152,9 +158,15 @@ class InstallerTests(unittest.TestCase):
         for source in (foreign, self.base / 'missing.md'):
             with self.subTest(source=source):
                 self.target.symlink_to(source)
-                self.run_install(copy=True, replace=True, success=False)
-                self.assertEqual(Path(os.readlink(self.target)), source)
-                self.target.unlink()
+                original_target = os.readlink(self.target)
+                try:
+                    self.run_install(copy=True, replace=True, success=False)
+                    self.assertTrue(self.target.is_symlink())
+                    # Windows may expose a \\?\ prefix; assert preservation,
+                    # not the platform's textual spelling of the target path.
+                    self.assertEqual(os.readlink(self.target), original_target)
+                finally:
+                    self.target.unlink(missing_ok=True)
         self.assertEqual(foreign.read_text(), 'foreign rules')
         self.assertEqual(self.backups(), [])
 
