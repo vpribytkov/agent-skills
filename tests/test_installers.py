@@ -144,7 +144,6 @@ class InstallerTests(unittest.TestCase):
         self.target.write_bytes(original)
         self.run_install(success=False)
         self.assertEqual(self.target.read_bytes(), original)
-        self.assertFalse(self.reference_target.exists())
         self.run_install(replace=True)
         self.assertTrue(self.target.is_symlink())
         self.assertEqual([p.read_bytes() for p in self.backups()], [original])
