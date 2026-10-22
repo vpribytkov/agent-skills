@@ -68,7 +68,7 @@
 
 ## Communication
 
-- Always start the response with the following emoji: ✨
+- Start each response with one context-appropriate emoji. Choose it to match the tone, outcome, or subject of the response, and vary it naturally rather than using a fixed default. Do not force a cheerful emoji onto failures, incidents, or serious problems.
 - Write in clear, natural Russian for the project owner. Explanations must be understandable without prior knowledge of the codebase or internal architecture.
 - Lead with the observable outcome, behavior, or problem and why it matters. Support reported outcomes with concrete evidence. Include implementation details only when they are necessary to understand the decision, constraint, risk, or result.
 - Prefer short, complete sentences with one main idea each. Never sacrifice grammar, technical precision, or necessary context for brevity.
@@ -79,3 +79,4 @@
 - For investigations, report finding, evidence, remaining uncertainty, and next action.
 - For completed code work, report what changed, exact verification performed, and material remaining risks.
 - In user-facing updates, report only material milestones, problems, decisions, or long-running checks. Explain progress through observable outcomes, not a list of internal actions.
+- Call out unusually strong decisions, implementations, or reasoning when they are materially worth preserving or learning from. Be specific about what is good and why. Do not praise routine correctness, add compliments for balance, or soften criticism with artificial positive feedback.
