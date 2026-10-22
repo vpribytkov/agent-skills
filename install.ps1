@@ -1,14 +1,12 @@
 param(
     [string]$TargetRoot = (Join-Path $HOME ".agents\skills"),
     [switch]$InstallAgents,
-    [ValidateSet("Link", "Copy")][string]$AgentsMode = "Link",
-    [switch]$ReplaceAgents,
     [string]$WorkflowsRoot = (Join-Path $HOME ".agents\workflows"),
     [string]$CodexHome = $(if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $HOME ".codex" })
 )
 
 $ErrorActionPreference = "Stop"
-if (-not $InstallAgents -and ($ReplaceAgents -or $PSBoundParameters.ContainsKey("AgentsMode") -or $PSBoundParameters.ContainsKey("WorkflowsRoot") -or $PSBoundParameters.ContainsKey("CodexHome"))) {
+if (-not $InstallAgents -and ($PSBoundParameters.ContainsKey("WorkflowsRoot") -or $PSBoundParameters.ContainsKey("CodexHome"))) {
     throw "AGENTS options require -InstallAgents."
 }
 
@@ -76,111 +74,47 @@ if ($collisions -gt 0) {
 }
 
 if ($InstallAgents) {
+    $agentsSource = [System.IO.Path]::GetFullPath((Join-Path $RepoRoot "AGENTS.md"))
+    $workflowsSource = [System.IO.Path]::GetFullPath((Join-Path $RepoRoot "workflows"))
     $CodexHome = [System.IO.Path]::GetFullPath($CodexHome)
-    New-Item -ItemType Directory -Force -Path $CodexHome | Out-Null
+    $WorkflowsRoot = [System.IO.Path]::GetFullPath($WorkflowsRoot)
+    $agentsTarget = Join-Path $CodexHome "AGENTS.md"
+
+    if (-not (Test-Path -LiteralPath $agentsSource -PathType Leaf)) {
+        throw "AGENTS.md not found: $agentsSource"
+    }
+    if (-not (Test-Path -LiteralPath $workflowsSource -PathType Container)) {
+        throw "Workflows directory not found: $workflowsSource"
+    }
+
     $override = Join-Path $CodexHome "AGENTS.override.md"
     if ($null -ne (Get-Item -LiteralPath $override -Force -ErrorAction SilentlyContinue)) {
         throw "Resolve $override manually before installing; it can shadow AGENTS.md."
     }
 
-    function Install-ManagedFile {
-        param(
-            [string]$Source,
-            [string]$Target,
-            [ValidateSet("Link", "Copy")][string]$FileMode,
-            [switch]$CheckOnly
-        )
-
-        $name = Split-Path -Leaf $Target
-        $parent = Split-Path -Parent $Target
-        if (-not (Test-Path -LiteralPath $Source -PathType Leaf) -or (Get-Item -LiteralPath $Source).Length -eq 0) {
-            throw "Missing or empty source: $Source"
-        }
-        if ($Target -eq $Source) {
-            throw "Source and destination must be different."
-        }
-
-        $current = Get-Item -LiteralPath $Target -Force -ErrorAction SilentlyContinue
-        if ($null -ne $current) {
-            if ($current.Attributes -band [System.IO.FileAttributes]::ReparsePoint) {
-                $linkTarget = $null
-                if ($current.LinkType -eq "SymbolicLink" -and $current.Target) {
-                    $linkTarget = @($current.Target)[0]
-                    if (-not [System.IO.Path]::IsPathRooted($linkTarget)) {
-                        $linkTarget = Join-Path $parent $linkTarget
-                    }
-                    $linkTarget = [System.IO.Path]::GetFullPath($linkTarget)
-                }
-                if ($FileMode -eq "Link" -and $linkTarget -eq $Source) {
-                    if (-not $CheckOnly) { Write-Host "[ok]   $name -> $Source" }
-                    return
-                }
-                throw "Refusing to replace a link: $Target. Resolve it manually."
-            }
-            if ($current.PSIsContainer) {
-                throw "Refusing to replace a directory: $Target"
-            }
-            if ($FileMode -eq "Copy" -and (Get-FileHash -LiteralPath $Source).Hash -eq (Get-FileHash -LiteralPath $Target).Hash) {
-                if (-not $CheckOnly) { Write-Host "[ok]   $name copy is current" }
-                return
-            }
-            if (-not $ReplaceAgents) {
-                throw "Existing file: $Target. Use -ReplaceAgents to back it up and replace it."
-            }
-        }
-
-        if ($CheckOnly) { return }
-
-        New-Item -ItemType Directory -Force -Path $parent | Out-Null
-        $id = [guid]::NewGuid().ToString("N")
-        $stage = Join-Path $parent ".agents-install-$id"
-        $backup = $null
-        New-Item -ItemType Directory -Path $stage | Out-Null
-        $stagedFile = Join-Path $stage $name
-        try {
-            if ($FileMode -eq "Link") {
-                try {
-                    New-Item -ItemType SymbolicLink -Path $stagedFile -Target $Source | Out-Null
-                } catch {
-                    throw "Cannot create the file symlink. Enable permitted symlink support or rerun with -AgentsMode Copy. Existing $name was not changed. $($_.Exception.Message)"
-                }
-            } else {
-                Copy-Item -LiteralPath $Source -Destination $stagedFile
-            }
-            if ($null -ne $current) {
-                $backup = "$Target.backup.$id"
-                Move-Item -LiteralPath $Target -Destination $backup
-            }
-            Move-Item -LiteralPath $stagedFile -Destination $Target
-            if ($backup) { Write-Host "[backup] $backup" }
-            $backup = $null
-            Write-Host "[$FileMode] $name -> $Target"
-        } finally {
-            if ($backup -and $null -eq (Get-Item -LiteralPath $Target -Force -ErrorAction SilentlyContinue)) {
-                Move-Item -LiteralPath $backup -Destination $Target
-            }
-            if ($null -ne (Get-Item -LiteralPath $stagedFile -Force -ErrorAction SilentlyContinue)) {
-                Remove-Item -LiteralPath $stagedFile -Force
-            }
-            Remove-Item -LiteralPath $stage
+    foreach ($target in @($agentsTarget, $WorkflowsRoot)) {
+        if ($null -ne (Get-Item -LiteralPath $target -Force -ErrorAction SilentlyContinue)) {
+            throw "Target already exists: $target"
         }
     }
 
-    $managed = @(
-        @{ Source = (Join-Path $RepoRoot "workflows\planning.md"); Target = (Join-Path $WorkflowsRoot "planning.md"); Mode = "Copy" },
-        @{ Source = (Join-Path $RepoRoot "workflows\investigation-rca.md"); Target = (Join-Path $WorkflowsRoot "investigation-rca.md"); Mode = "Copy" },
-        @{ Source = (Join-Path $RepoRoot "workflows\integration-tests.md"); Target = (Join-Path $WorkflowsRoot "integration-tests.md"); Mode = "Copy" },
-        @{ Source = (Join-Path $RepoRoot "workflows\observability.md"); Target = (Join-Path $WorkflowsRoot "observability.md"); Mode = "Copy" },
-        @{ Source = (Join-Path $RepoRoot "workflows\openspec.md"); Target = (Join-Path $WorkflowsRoot "openspec.md"); Mode = "Copy" },
-        @{ Source = (Join-Path $RepoRoot "AGENTS.md"); Target = (Join-Path $CodexHome "AGENTS.md"); Mode = $AgentsMode }
-    )
+    New-Item -ItemType Directory -Force -Path $CodexHome | Out-Null
+    New-Item -ItemType Directory -Force -Path (Split-Path -Parent $WorkflowsRoot) | Out-Null
 
-    foreach ($file in $managed) {
-        Install-ManagedFile -Source $file.Source -Target $file.Target -FileMode $file.Mode -CheckOnly
-    }
-    foreach ($file in $managed) {
-        Install-ManagedFile -Source $file.Source -Target $file.Target -FileMode $file.Mode
+    try {
+        New-Item -ItemType Junction -Path $WorkflowsRoot -Target $workflowsSource | Out-Null
+        New-Item -ItemType SymbolicLink -Path $agentsTarget -Target $agentsSource | Out-Null
+    } catch {
+        if ($null -ne (Get-Item -LiteralPath $agentsTarget -Force -ErrorAction SilentlyContinue)) {
+            Remove-Item -LiteralPath $agentsTarget -Force
+        }
+        if ($null -ne (Get-Item -LiteralPath $WorkflowsRoot -Force -ErrorAction SilentlyContinue)) {
+            Remove-Item -LiteralPath $WorkflowsRoot -Force
+        }
+        throw
     }
 
+    Write-Host "[link] workflows -> $workflowsSource"
+    Write-Host "[link] AGENTS.md -> $agentsSource"
     Write-Host "Start a new Codex session to load the instructions."
 }

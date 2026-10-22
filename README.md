@@ -27,8 +27,8 @@ agent-skills/
 
 Every direct subdirectory under `skills/` is treated as an installable skill. Files directly under `skills/` are ignored by the installers.
 
-The five routed workflow files keep their original contents and are copied into
-`~/.agents/workflows/` when global instructions are installed.
+The `workflows/` directory is linked into `~/.agents/workflows/` when global
+instructions are installed.
 
 ## Install
 
@@ -92,42 +92,19 @@ sh ./install.sh --agents
 ```
 
 The global instruction destination is `$CODEX_HOME/AGENTS.md` when `CODEX_HOME`
-is set, otherwise `~/.codex/AGENTS.md`. Workflow files are copied to
-`~/.agents/workflows/`. `-WorkflowsRoot` / `--workflows-root` overrides that
-directory when needed.
+is set, otherwise `~/.codex/AGENTS.md`. The repository `workflows/` directory
+is linked to `~/.agents/workflows/`. `-WorkflowsRoot` / `--workflows-root`
+overrides that directory when needed.
 
-`AGENTS.md` is installed as a file symlink by default; workflow files are copied.
-On Windows, file symlinks can require Developer Mode or appropriate privileges.
-Use copy mode if symlinks are unavailable:
-
-```powershell
-.\install.ps1 -InstallAgents -AgentsMode Copy
-```
-
-```bash
-sh ./install.sh --agents --copy
-```
+The workflows directory is linked like skill directories: a junction on Windows and
+a symlink on macOS/Linux. `AGENTS.md` is a file symlink. On Windows, creating that
+file symlink can require Developer Mode or appropriate privileges.
 
 ### First migration and safety
 
-Existing managed files are not replaced unless explicitly requested:
-
-```powershell
-.\install.ps1 -InstallAgents -ReplaceAgents
-# For a machine where file symlinks are unavailable:
-.\install.ps1 -InstallAgents -AgentsMode Copy -ReplaceAgents
-```
-
-```bash
-sh ./install.sh --agents --replace-agents
-# Copy mode:
-sh ./install.sh --agents --copy --replace-agents
-```
-
-Replacement keeps the previous file as `<filename>.backup.<unique-id>`.
-The installer checks all managed destinations before changing them, installs workflow
-files before activating `AGENTS.md`, and leaves correct links or identical copies
-unchanged. Directories and foreign/dangling links are never replaced automatically.
+The installer never replaces an existing `AGENTS.md` or workflows target. If either
+target already exists, installation stops with an error. Move or remove the old file
+or link explicitly, then rerun the installer.
 
 Any `AGENTS.override.md` (including an empty file or dangling link) blocks global
 installation until resolved manually: an override can shadow the shared rules.
@@ -143,9 +120,9 @@ apply. The installer does not install CLI/MCP tools.
 
 Edit `AGENTS.md` or a file under `workflows/` in this checkout, commit and push,
 then run `git pull` on the other computer.
-Symlinked `AGENTS.md` updates immediately after pull. Workflow files are copies,
-so rerun the installer with the replacement flag after workflow changes. Run the
-installer after pulling newly added skills so their directory links are created too.
+`AGENTS.md` and workflows both point directly at this checkout, so their changes
+become visible after `git pull`. Run the installer after pulling newly added skills
+so their directory links are created too.
 Git does not pull automatically.
 
 Do not link global instructions to a temporary worktree that will be deleted.
@@ -200,9 +177,9 @@ If a skill needs machine-local configuration, keep a tracked `profile.example.ya
 
 ## Installer verification
 
-The tests use disposable homes and verify links, workflow copies, replacement safety,
-and failure recovery. They do not touch the real agent configuration. Python is a
-test-only dependency.
+The tests use disposable homes and verify link targets, collision handling, and
+rollback if creating the global file link fails. They do not touch the real agent
+configuration. Python is a test-only dependency.
 
 ```bash
 python3 tests/test_installers.py
