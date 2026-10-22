@@ -15,7 +15,7 @@ Use the existing installation. On Windows, use the known per-user npm shim (or a
 & "$env:APPDATA\npm\openspec.cmd" <arguments>
 ```
 
-Do not probe PATH, use `npx`, or reinstall it on Windows. Request `sandbox_permissions="require_escalated"` when required by the configured Windows runtime and allowed by its approval policy. On other systems, use the existing configured OpenSpec command. If unavailable, report the tool/access gap instead of guessing an installation path.
+Do not probe PATH, use `npx`, or reinstall it on Windows. On Windows, run the installed command with `sandbox_permissions="require_escalated"`. On other systems, use the existing configured OpenSpec command. If unavailable, report the tool/access gap instead of guessing an installation path.
 
 Supported forms from the existing workflow:
 
