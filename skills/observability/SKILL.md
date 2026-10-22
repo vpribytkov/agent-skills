@@ -127,7 +127,7 @@ Before adding a metric, decide which layer owns the measured event:
 
 Place the metric at the layer where the measured operation actually happens. Do not expose storage or client operation metrics from a service just because the service calls that dependency.
 
-When the repository uses dotted metric names, use `<layer>.<component>.<operation>.<result>`. Preserve an established repository-specific convention otherwise; keep the same event ownership and bounded dimensions.
+Use this naming pattern: `<layer>.<component>.<operation>.<result>`.
 
 Examples:
 

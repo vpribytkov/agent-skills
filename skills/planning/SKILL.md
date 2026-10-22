@@ -47,7 +47,7 @@ If a broad step starts touching multiple independent behaviors, split it into sm
 
 For investigation tasks, keep the current hypothesis, evidence, blockers, and next action explicit.
 
-Show a concise plan in chat before implementation or investigation work; keep the full atomic plan in the persistent file when one is used, but do not wait for approval unless the user explicitly asked for approval, or unless the plan depends on unresolved product judgment.
+Show the plan in chat before implementation or investigation work, but do not wait for approval unless the user explicitly asked for approval, or unless the plan depends on unresolved product judgment.
 
 For multi-step work:
 - implement or investigate step by step;
@@ -84,7 +84,7 @@ Before final response:
 - ensure every changed file or major investigation claim maps back to a plan step;
 - mention any implementation drift from the original plan.
 
-The final response must summarize the following; link to the persistent plan for per-step file lists and detailed self-review evidence instead of duplicating them in chat:
+The final response must include:
 - implementation steps completed;
 - files changed per step;
 - verification performed;
@@ -92,5 +92,3 @@ The final response must summarize the following; link to the persistent plan for
 - remaining risks or follow-ups.
 
 Do not keep important long-running task state only in chat or only in an internal todo list.
-
-If the active workflow already maintains a persistent plan with these fields, update it instead of creating a second competing plan. Use the default location above only when no such plan exists.
