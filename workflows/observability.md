@@ -1,8 +1,3 @@
----
-name: observability
-description: "Assess and implement metrics, structured logs, and traces for runtime behavior changes, async work, integrations, error paths, and production readiness."
----
-
 # Observability workflow
 
 Use this workflow for production behavior changes, async jobs, integrations, validation/rejection flows, data imports/exports, retries, error-path changes, and any code path whose runtime behavior must be understood after deployment.
@@ -71,7 +66,7 @@ Prefer counters with bounded labels such as:
 - source;
 - status.
 
-Avoid high-cardinality labels such as raw IDs, user IDs, record keys, emails, request IDs, or unbounded error strings.
+Avoid high-cardinality labels such as raw IDs, user IDs, VINs, emails, request IDs, or unbounded error strings.
 
 ## Technical metrics
 
@@ -103,7 +98,7 @@ Use:
 
 Avoid derived or redundant metrics. If a value can be reliably derived from existing metrics, prefer not to add a separate metric.
 
-For example, if both `service.record_sync.rows.success` and `service.record_sync.rows.failed` exist, then a separate batch-size metric is usually unnecessary because processed batch size is `rows.success + rows.failed`.
+For example, if both `service.padme_sync.rows.success` and `service.padme_sync.rows.failed` exist, then a separate batch-size metric is usually unnecessary because processed batch size is `rows.success + rows.failed`.
 
 Add a separate metric only when it answers a different production question or avoids an expensive calculation/query.
 
@@ -131,12 +126,12 @@ Use this naming pattern: `<layer>.<component>.<operation>.<result>`.
 
 Examples:
 
-- `service.record_sync.rows.success`
-- `service.record_sync.rows.failed`
-- `storage.records.acquire_record_sync_batch.success`
-- `storage.records.acquire_record_sync_batch.error`
-- `storage.records.mark_record_synced.success`
-- `storage.records.mark_record_synced.error`
+- `service.padme_sync.rows.success`
+- `service.padme_sync.rows.failed`
+- `storage.personal_data.acquire_padme_sync_batch.success`
+- `storage.personal_data.acquire_padme_sync_batch.error`
+- `storage.personal_data.mark_padme_synced.success`
+- `storage.personal_data.mark_padme_synced.error`
 
 A service-level metric should describe the business/process outcome. A storage-level metric should describe the DB operation outcome. A client-level metric should describe the external call outcome.
 

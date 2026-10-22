@@ -1,8 +1,3 @@
----
-name: investigation-rca
-description: "Investigate bugs, regressions, incidents, latency, logs, metrics, and RCA with independent evidence gathering, competing hypotheses, and a root-cause completion gate."
----
-
 ### Autonomous investigation before escalation
 
 When investigating a bug, incident, SLI/SLO degradation, metric anomaly, logs issue, dependency behavior, or code-path question, do the available research independently before asking the user for help.

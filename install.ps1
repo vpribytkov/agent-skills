@@ -3,11 +3,12 @@ param(
     [switch]$InstallAgents,
     [ValidateSet("Link", "Copy")][string]$AgentsMode = "Link",
     [switch]$ReplaceAgents,
+    [string]$WorkflowsRoot = (Join-Path $HOME ".agents\workflows"),
     [string]$CodexHome = $(if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $HOME ".codex" })
 )
 
 $ErrorActionPreference = "Stop"
-if (-not $InstallAgents -and ($ReplaceAgents -or $PSBoundParameters.ContainsKey("AgentsMode") -or $PSBoundParameters.ContainsKey("CodexHome"))) {
+if (-not $InstallAgents -and ($ReplaceAgents -or $PSBoundParameters.ContainsKey("AgentsMode") -or $PSBoundParameters.ContainsKey("WorkflowsRoot") -or $PSBoundParameters.ContainsKey("CodexHome"))) {
     throw "AGENTS options require -InstallAgents."
 }
 
@@ -75,5 +76,5 @@ if ($collisions -gt 0) {
 }
 
 if ($InstallAgents) {
-    & (Join-Path $RepoRoot "scripts\install-agents.ps1") -CodexHome $CodexHome -Mode $AgentsMode -Replace:$ReplaceAgents
+    & (Join-Path $RepoRoot "scripts\install-agents.ps1") -CodexHome $CodexHome -WorkflowsRoot $WorkflowsRoot -Mode $AgentsMode -Replace:$ReplaceAgents
 }

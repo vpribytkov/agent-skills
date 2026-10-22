@@ -1,8 +1,3 @@
----
-name: integration-tests
-description: "Write, change, or review Go integration tests, DB-backed tests, repository tests, and service tests that verify persisted behavior and transaction boundaries."
----
-
 # Go integration test workflow
 
 Use this workflow for Go integration tests, DB-backed tests, repository integration tests, and service tests that verify database behavior.
@@ -18,7 +13,7 @@ For a method or behavior, use one test function with multiple cases instead of s
 Prefer:
 
 ```go
-func TestService_ProcessItemUpdateIntegration(t *testing.T) {
+func TestService_ProcessVinItemUpdateIntegration(t *testing.T) {
     cases := []struct {
         name    string
         prepare func(ctx context.Context, t *testing.T, deps testDeps) input
@@ -42,23 +37,23 @@ Avoid creating separate top-level test functions for each case when they test th
 Avoid:
 
 ```go
-TestService_ProcessItemUpdateIntegration_savesRecord
-TestService_ProcessItemUpdateIntegration_skipsEmptyOldValue
-TestService_ProcessItemUpdateIntegration_rollsBackRecordOnStaleEvent
+TestService_ProcessVinItemUpdateIntegration_savesPersonalData
+TestService_ProcessVinItemUpdateIntegration_skipsEmptyOldVIN
+TestService_ProcessVinItemUpdateIntegration_rollsBackPersonalDataOnStaleEvent
 ```
 
 Prefer:
 
 ```go
-TestService_ProcessItemUpdateIntegration
+TestService_ProcessVinItemUpdateIntegration
 ```
 
 with named table cases:
 
 ```go
-"saves record"
-"skips empty old value"
-"rolls back record on stale event"
+"saves personal data"
+"skips empty old VIN"
+"rolls back personal data on stale event"
 ```
 
 ## Scenario readability
@@ -122,7 +117,7 @@ Before adding a mock:
 3. If a new mock is required, generate it using the project's standard tooling.
 4. Do not hand-write bespoke mocks unless nearby project tests already use that pattern or generation is unavailable.
 
-In repositories that already use them, prefer existing mock generation workflows such as:
+For this codebase, prefer existing mock generation workflows such as:
 
 ```bash
 avito codegen
@@ -160,7 +155,7 @@ Run the narrowest reliable integration test command first.
 Prefer targeted commands such as:
 
 ```bash
-go test -tags=integration ./internal/integration_tests -run TestService_ProcessItemUpdateIntegration
+go test -tags=integration ./internal/integration_tests -run TestService_ProcessVinItemUpdateIntegration
 ```
 
 Then broaden only when needed.

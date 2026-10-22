@@ -5,6 +5,7 @@ SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 SOURCE_ROOT="$SCRIPT_DIR/skills"
 TARGET_ROOT="$HOME/.agents/skills"
 CODEX_DIR="${CODEX_HOME:-$HOME/.codex}"
+WORKFLOW_DIR="$HOME/.agents/workflows"
 INSTALL_AGENTS=false
 MODE=link
 REPLACE=false
@@ -18,6 +19,9 @@ while [ "$#" -gt 0 ]; do
     --codex-home)
       [ "$#" -ge 2 ] && [ -n "$2" ] || { echo '--codex-home requires a directory.' >&2; exit 1; }
       CODEX_DIR=$2; AGENTS_OPTIONS=true; shift ;;
+    --workflows-root)
+      [ "$#" -ge 2 ] && [ -n "$2" ] || { echo '--workflows-root requires a directory.' >&2; exit 1; }
+      WORKFLOW_DIR=$2; AGENTS_OPTIONS=true; shift ;;
     --*) echo "Unknown option: $1" >&2; exit 1 ;;
     *)
       [ "$TARGET_SET" = false ] || { echo 'Only one skill target directory is accepted.' >&2; exit 1; }
@@ -86,5 +90,5 @@ if [ "$collisions" -gt 0 ]; then
 fi
 
 if [ "$INSTALL_AGENTS" = true ]; then
-  sh "$SCRIPT_DIR/scripts/install-agents.sh" "$CODEX_DIR" "$MODE" "$REPLACE"
+  sh "$SCRIPT_DIR/scripts/install-agents.sh" "$CODEX_DIR" "$MODE" "$REPLACE" "$WORKFLOW_DIR"
 fi

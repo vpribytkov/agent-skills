@@ -1,5 +1,6 @@
 param(
     [string]$CodexHome = $(if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $HOME ".codex" }),
+    [string]$WorkflowsRoot = (Join-Path $HOME ".agents\workflows"),
     [ValidateSet("Link", "Copy")][string]$Mode = "Link",
     [switch]$Replace
 )
@@ -15,7 +16,7 @@ if ($null -ne (Get-Item -LiteralPath $override -Force -ErrorAction SilentlyConti
 }
 
 function Install-InstructionFile {
-    param([string]$Source, [string]$Target, [switch]$CheckOnly)
+    param([string]$Source, [string]$Target, [ValidateSet("Link", "Copy")][string]$FileMode = $Mode, [switch]$CheckOnly)
 
     $name = Split-Path -Leaf $Target
     $parent = Split-Path -Parent $Target
@@ -36,7 +37,7 @@ function Install-InstructionFile {
                 }
                 $linkTarget = [System.IO.Path]::GetFullPath($linkTarget)
             }
-            if ($Mode -eq "Link" -and $linkTarget -eq $Source) {
+            if ($FileMode -eq "Link" -and $linkTarget -eq $Source) {
                 if (-not $CheckOnly) { Write-Host "[ok]   $name -> $Source" }
                 return
             }
@@ -45,7 +46,7 @@ function Install-InstructionFile {
         if ($current.PSIsContainer) {
             throw "Refusing to replace a directory: $Target"
         }
-        if ($Mode -eq "Copy" -and (Get-FileHash -LiteralPath $Source).Hash -eq (Get-FileHash -LiteralPath $Target).Hash) {
+        if ($FileMode -eq "Copy" -and (Get-FileHash -LiteralPath $Source).Hash -eq (Get-FileHash -LiteralPath $Target).Hash) {
             if (-not $CheckOnly) { Write-Host "[ok]   $name copy is current" }
             return
         }
@@ -63,7 +64,7 @@ function Install-InstructionFile {
     New-Item -ItemType Directory -Path $stage | Out-Null
     $stagedFile = Join-Path $stage $name
     try {
-        if ($Mode -eq "Link") {
+        if ($FileMode -eq "Link") {
             try {
                 New-Item -ItemType SymbolicLink -Path $stagedFile -Target $Source | Out-Null
             } catch {
@@ -79,7 +80,7 @@ function Install-InstructionFile {
         Move-Item -LiteralPath $stagedFile -Destination $Target
         if ($backup) { Write-Host "[backup] $backup" }
         $backup = $null
-        Write-Host "[$Mode] $name -> $Target"
+        Write-Host "[$FileMode] $name -> $Target"
     } finally {
         if ($backup -and $null -eq (Get-Item -LiteralPath $Target -Force -ErrorAction SilentlyContinue)) {
             Move-Item -LiteralPath $backup -Destination $Target
@@ -91,12 +92,20 @@ function Install-InstructionFile {
     }
 }
 
-# Check both destinations before replacing either file; activate AGENTS.md last.
-$files = @("references\codegraph.md", "AGENTS.md")
-foreach ($file in $files) {
-    Install-InstructionFile -Source (Join-Path $RepoRoot $file) -Target (Join-Path $CodexHome $file) -CheckOnly
+# Check every managed destination before replacing any file; activate AGENTS.md last.
+$specs = @(
+    @{ Source = (Join-Path $RepoRoot "references\codegraph.md"); Target = (Join-Path $CodexHome "references\codegraph.md"); FileMode = $Mode },
+    @{ Source = (Join-Path $RepoRoot "workflows\planning.md"); Target = (Join-Path $WorkflowsRoot "planning.md"); FileMode = "Copy" },
+    @{ Source = (Join-Path $RepoRoot "workflows\investigation-rca.md"); Target = (Join-Path $WorkflowsRoot "investigation-rca.md"); FileMode = "Copy" },
+    @{ Source = (Join-Path $RepoRoot "workflows\integration-tests.md"); Target = (Join-Path $WorkflowsRoot "integration-tests.md"); FileMode = "Copy" },
+    @{ Source = (Join-Path $RepoRoot "workflows\observability.md"); Target = (Join-Path $WorkflowsRoot "observability.md"); FileMode = "Copy" },
+    @{ Source = (Join-Path $RepoRoot "workflows\openspec.md"); Target = (Join-Path $WorkflowsRoot "openspec.md"); FileMode = "Copy" },
+    @{ Source = (Join-Path $RepoRoot "AGENTS.md"); Target = (Join-Path $CodexHome "AGENTS.md"); FileMode = $Mode }
+)
+foreach ($spec in $specs) {
+    Install-InstructionFile -Source $spec.Source -Target $spec.Target -FileMode $spec.FileMode -CheckOnly
 }
-foreach ($file in $files) {
-    Install-InstructionFile -Source (Join-Path $RepoRoot $file) -Target (Join-Path $CodexHome $file)
+foreach ($spec in $specs) {
+    Install-InstructionFile -Source $spec.Source -Target $spec.Target -FileMode $spec.FileMode
 }
 Write-Host "Start a new Codex session to load the instructions."

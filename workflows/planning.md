@@ -1,8 +1,3 @@
----
-name: planning
-description: "Plan non-trivial multi-step coding or investigation work with reviewable atomic steps, persistent progress, verification, and context recovery."
----
-
 ### Task planning and progress tracking
 
 For any coding or investigation task, create a proportional plan before substantial work.
@@ -36,9 +31,9 @@ Avoid vague plan steps such as:
 - "adjust service logic".
 
 Prefer reviewable steps such as:
-- "change `ValidateItemPaths` to collect up to 10 missing item paths";
-- "add unit cases for multi-error `ValidateItemPaths` behavior";
-- "update `archive_records` to construct `ImportValidator` through `New(...)`";
+- "change `ConditionPathExists` to collect up to 10 missing category paths";
+- "add unit cases for multi-error `ConditionPathExists` behavior";
+- "update `archive_old_entities` to construct `ExperimentGenerationValidator` through `New(...)`";
 - "replace zero-value validator construction in remaining `cmd/**/main.go` entrypoints".
 
 For coding tasks, every changed file must map back to a plan step. If implementation needs to touch a file not covered by the plan, update the plan before changing it.
