@@ -4,7 +4,9 @@ on:
     paths:
       - 'install.*'
       - 'scripts/install-agents.*'
-      - 'instructions/**'
+      - 'AGENTS.md'
+      - 'references/**'
+      - 'workflows/**'
       - 'tests/test_installers.py'
       - '.github/workflows/installers.yml'
   workflow_dispatch:
