@@ -207,7 +207,17 @@ Refresh candidates before another recommendation if the owner asks to reconsider
 2. Confirm or correct the Resolved Intent with the owner and record its acceptance.
    Do not repeat an already resolved interview on resume.
 
-3. Invoke the proposal skill, then run the configured summary.
+3. Before invoking the proposal skill, check `repository.openspec_change_template`.
+   When it is non-null, derive the proposal change name from that template and pass
+   the explicit name to the configured proposal skill. Supported placeholders are
+   `{item}` (canonical work-item key), `{item_lower}`, `{repository}`,
+   `{service}` and `{slug}`. Resolve `repository` from the current checkout;
+   `service` uses the repository/service identity established by current project
+   context and otherwise falls back to the repository name. Derive `slug` as a
+   short lowercase ASCII kebab-case description of the approved intent. If a
+   required placeholder cannot be resolved unambiguously, ask the owner instead of
+   inventing it. When the template is null, let the proposal skill derive the name
+   normally. Then invoke the proposal skill and run the configured summary.
    Apply summary-driven revisions autonomously while they stay within the approved
    Resolved Intent. If the summary exposes a new material product, scope, acceptance,
    ownership or architecture decision, stop and ask the owner before continuing.

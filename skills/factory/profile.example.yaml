@@ -41,6 +41,9 @@ repository:
     - openspec/config.yaml
     - openspec/specs/
   openspec_command: openspec
+  # Work example: '{item_lower}-{service}-{slug}'
+  # Leave null to let the proposal skill derive the change name normally.
+  openspec_change_template: null
   branch_template: 'issue/{item_number}-{slug}'
 
 prioritization_prompt: |
