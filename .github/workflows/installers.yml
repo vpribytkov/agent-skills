@@ -5,7 +5,6 @@ on:
       - 'install.*'
       - 'scripts/install-agents.*'
       - 'AGENTS.md'
-      - 'references/**'
       - 'workflows/**'
       - 'tests/test_installers.py'
       - '.github/workflows/installers.yml'
