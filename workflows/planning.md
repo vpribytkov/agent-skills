@@ -62,11 +62,11 @@ The persistent task plan should preserve both:
 - the current progress state.
 
 When a persistent task plan is needed:
-- create it under `$HOME/Documents/ai-dev-artifacts/plans/<repo-name>/` by default;
-- resolve `$HOME` before creating the file;
+- use the active harness global configuration directory already resolved as `<agent-root>`;
+- create the plan under `<agent-root>/plans/<repo-name>/`;
 - use the repository root directory name as `<repo-name>`;
 - use a clear task-specific filename with the plan creation date (`YYYYMMDD` format) as a prefix:
-  - `$HOME/Documents/ai-dev-artifacts/plans/<repo-name>/YYYYMMDD-<short-task-name>-progress.md`
+  - `<agent-root>/plans/<repo-name>/YYYYMMDD-<short-task-name>-progress.md`
 - keep the original date prefix unchanged if work on the same plan continues across multiple days;
 - use lowercase kebab-case for `<short-task-name>`;
 - keep a `Next action` section current;
