@@ -3,7 +3,6 @@ on:
   pull_request:
     paths:
       - 'install.*'
-      - 'scripts/install-agents.*'
       - 'AGENTS.md'
       - 'workflows/**'
       - 'tests/test_installers.py'

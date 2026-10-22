@@ -26,7 +26,7 @@ class InstallerTests(unittest.TestCase):
         self.base = Path(self.temp.name)
         self.repo = self.base / 'checkout with spaces'
         self.repo.mkdir()
-        for name in ('install.sh', 'install.ps1', 'scripts', 'AGENTS.md', 'workflows'):
+        for name in ('install.sh', 'install.ps1', 'AGENTS.md', 'workflows'):
             source = REPO / name
             dest = self.repo / name
             if source.is_dir():
@@ -230,7 +230,6 @@ class InstallerTests(unittest.TestCase):
         self.assertEqual([p.read_bytes() for p in backups], [original])
         self.assert_no_staging()
 
-
     @unittest.skipIf(args.powershell, 'POSIX HOME fallback; Windows uses native $HOME')
     def test_default_home_without_codex_home(self):
         self.env.pop('CODEX_HOME')
@@ -244,7 +243,7 @@ class InstallerTests(unittest.TestCase):
 
     @unittest.skipIf(args.powershell, 'POSIX failure injection; no fake success on Windows')
     def test_staging_failure_leaves_existing_file_untouched(self):
-        # Fail only the global file symlink, not the earlier reference/skill links.
+        # Fail only the global AGENTS.md symlink.
         fake_bin = self.base / 'fake bin'
         fake_bin.mkdir()
         real_ln = shutil.which('ln')

@@ -27,9 +27,8 @@ agent-skills/
 
 Every direct subdirectory under `skills/` is treated as an installable skill. Files directly under `skills/` are ignored by the installers.
 
-The five routed workflow files are kept as plain references with their original
-contents. They are copied into `~/.agents/workflows/` when global instructions
-are installed. The unused `frontend.md` and superseded `pr.md` are not installed.
+The five routed workflow files keep their original contents and are copied into
+`~/.agents/workflows/` when global instructions are installed.
 
 ## Install
 
@@ -81,8 +80,8 @@ sh ./install.sh ~/.claude/skills
 ## Global Codex instructions (opt-in)
 
 The root `AGENTS.md` is the single source of truth for the work and home rules.
-It also applies when working in this repository. The ordinary install commands
-above still install **skills only**. To also install the global instructions and routed workflow references on each computer:
+The ordinary install commands above still install **skills only**. To also install
+the global instructions and workflow files:
 
 ```powershell
 .\install.ps1 -InstallAgents
@@ -92,16 +91,14 @@ above still install **skills only**. To also install the global instructions and
 sh ./install.sh --agents
 ```
 
-The global instruction destination is `$CODEX_HOME/AGENTS.md` when `CODEX_HOME` is set,
-otherwise `~/.codex/AGENTS.md`. Workflow references are copied to
-`~/.agents/workflows/`. Override that directory with `-WorkflowsRoot <directory>`
-or `--workflows-root <directory>` when needed. `-TargetRoot` / the positional
-shell directory still controls only the skill store.
+The global instruction destination is `$CODEX_HOME/AGENTS.md` when `CODEX_HOME`
+is set, otherwise `~/.codex/AGENTS.md`. Workflow files are copied to
+`~/.agents/workflows/`. `-WorkflowsRoot` / `--workflows-root` overrides that
+directory when needed.
 
-For `AGENTS.md`, installers prefer a **file symlink**, not a hard link. Workflow references are always copied into `~/.agents/workflows/`.
-On Windows, unlike skill-directory junctions, file symlinks can require Developer
-Mode or appropriate privileges. There is no silent fallback or privilege escalation.
-If symlinks are not permitted, explicitly select copy mode for the global files:
+`AGENTS.md` is installed as a file symlink by default; workflow files are copied.
+On Windows, file symlinks can require Developer Mode or appropriate privileges.
+Use copy mode if symlinks are unavailable:
 
 ```powershell
 .\install.ps1 -InstallAgents -AgentsMode Copy
@@ -113,7 +110,7 @@ sh ./install.sh --agents --copy
 
 ### First migration and safety
 
-Existing managed instruction/reference/workflow files are not replaced unless explicitly requested:
+Existing managed files are not replaced unless explicitly requested:
 
 ```powershell
 .\install.ps1 -InstallAgents -ReplaceAgents
@@ -127,15 +124,10 @@ sh ./install.sh --agents --replace-agents
 sh ./install.sh --agents --copy --replace-agents
 ```
 
-Replacement preserves each old file beside it as `<filename>.backup.<unique-id>`.
-The installer checks every managed destination before replacing any file, then
-installs references and workflow copies before activating `AGENTS.md`. Each file
-is staged before moving its old version; that file is restored if activation fails.
-Recovery is per-file rather than one transaction across all destinations. Rerunning
-is safe. Correct links and identical copies are left unchanged.
-Directories and foreign/dangling links are refused even with the replacement flag.
-To deliberately switch an existing symlink to copy mode, remove **only that link**
-yourself, then run copy installation. Do not remove its source file.
+Replacement keeps the previous file as `<filename>.backup.<unique-id>`.
+The installer checks all managed destinations before changing them, installs workflow
+files before activating `AGENTS.md`, and leaves correct links or identical copies
+unchanged. Directories and foreign/dangling links are never replaced automatically.
 
 Any `AGENTS.override.md` (including an empty file or dangling link) blocks global
 installation until resolved manually: an override can shadow the shared rules.
@@ -143,20 +135,15 @@ The installer never changes it, `config.toml`, authentication files, or unrelate
 Codex state. Skill collisions stop the command before global installation;
 previously created skill links can remain and rerunning is safe.
 
-After migration, start a **new Codex session** and ask it to summarize its active
-instructions. Do not assume an existing chat has reloaded the file.
-The router reads the installed files under `~/.agents/workflows/` when their
-conditions apply. The installer does not install CLI/MCP tools.
-
-If an earlier draft was installed, remove only its obsolete managed links to
-`instructions/AGENTS.md`, `skills/frontend`, and `skills/codegraph` before reinstalling.
-Do not remove unrelated local skills or the links' source files.
+After migration, start a **new Codex session**; existing chats do not reload the
+global file automatically. The router reads workflow files only when their conditions
+apply. The installer does not install CLI/MCP tools.
 
 ### Synchronizing the global files
 
 Edit `AGENTS.md` or a file under `workflows/` in this checkout, commit and push,
 then run `git pull` on the other computer.
-Symlinked global files update immediately after pull. Workflow references are copies,
+Symlinked `AGENTS.md` updates immediately after pull. Workflow files are copies,
 so rerun the installer with the replacement flag after workflow changes. Run the
 installer after pulling newly added skills so their directory links are created too.
 Git does not pull automatically.
@@ -213,9 +200,9 @@ If a skill needs machine-local configuration, keep a tracked `profile.example.ya
 
 ## Installer verification
 
-The tests use disposable homes and check resulting files, link targets, preserved
-bytes, collisions, copy updates, and failure recovery. They do not touch your real
-agent configuration. Python is a test-only dependency, not an installation dependency.
+The tests use disposable homes and verify links, workflow copies, replacement safety,
+and failure recovery. They do not touch the real agent configuration. Python is a
+test-only dependency.
 
 ```bash
 python3 tests/test_installers.py
