@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# Called by install.sh; manages AGENTS.md, CodeGraph reference, and routed workflow references.
+# Called by install.sh; manages AGENTS.md and routed workflow references.
 set -eu
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
@@ -83,10 +83,9 @@ install_file() (
   printf '[%s] %s -> %s\n' "$FILE_MODE" "$NAME" "$TARGET"
 )
 
-# Check every managed destination before replacing any file. Install references
+# Check every managed destination before replacing any file. Install workflows
 # before AGENTS.md so the newly activated router never points at missing files.
 for CHECK_ONLY in true false; do
-  install_file "$REPO_DIR/references/codegraph.md" "$CODEX_DIR/references/codegraph.md" "$CHECK_ONLY" "$MODE"
   install_file "$REPO_DIR/workflows/planning.md" "$WORKFLOW_DIR/planning.md" "$CHECK_ONLY" copy
   install_file "$REPO_DIR/workflows/investigation-rca.md" "$WORKFLOW_DIR/investigation-rca.md" "$CHECK_ONLY" copy
   install_file "$REPO_DIR/workflows/integration-tests.md" "$WORKFLOW_DIR/integration-tests.md" "$CHECK_ONLY" copy

@@ -94,7 +94,6 @@ function Install-InstructionFile {
 
 # Check every managed destination before replacing any file; activate AGENTS.md last.
 $specs = @(
-    @{ Source = (Join-Path $RepoRoot "references\codegraph.md"); Target = (Join-Path $CodexHome "references\codegraph.md"); FileMode = $Mode },
     @{ Source = (Join-Path $RepoRoot "workflows\planning.md"); Target = (Join-Path $WorkflowsRoot "planning.md"); FileMode = "Copy" },
     @{ Source = (Join-Path $RepoRoot "workflows\investigation-rca.md"); Target = (Join-Path $WorkflowsRoot "investigation-rca.md"); FileMode = "Copy" },
     @{ Source = (Join-Path $RepoRoot "workflows\integration-tests.md"); Target = (Join-Path $WorkflowsRoot "integration-tests.md"); FileMode = "Copy" },

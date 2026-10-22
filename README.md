@@ -9,8 +9,6 @@ The repository is the source of truth for the skill definitions. Installation do
 ```text
 agent-skills/
 ├── AGENTS.md
-├── references/
-│   └── codegraph.md
 ├── workflows/
 │   ├── planning.md
 │   ├── investigation-rca.md
@@ -29,8 +27,6 @@ agent-skills/
 
 Every direct subdirectory under `skills/` is treated as an installable skill. Files directly under `skills/` are ignored by the installers.
 
-`references/codegraph.md` is the supplied third-party tool reference, kept unchanged,
-not an installable skill. Its routing and local usage constraints remain in `AGENTS.md`.
 The five routed workflow files are kept as plain references with their original
 contents. They are copied into `~/.agents/workflows/` when global instructions
 are installed. The unused `frontend.md` and superseded `pr.md` are not installed.
@@ -86,8 +82,7 @@ sh ./install.sh ~/.claude/skills
 
 The root `AGENTS.md` is the single source of truth for the work and home rules.
 It also applies when working in this repository. The ordinary install commands
-above still install **skills only**. To also install the global instructions, their CodeGraph reference, and the
-routed workflow references on each computer:
+above still install **skills only**. To also install the global instructions and routed workflow references on each computer:
 
 ```powershell
 .\install.ps1 -InstallAgents
@@ -97,15 +92,13 @@ routed workflow references on each computer:
 sh ./install.sh --agents
 ```
 
-The global destinations are `$CODEX_HOME/AGENTS.md` and
-`$CODEX_HOME/references/codegraph.md` when `CODEX_HOME` is set, otherwise the
-same paths under `~/.codex`. Workflow references are copied to
+The global instruction destination is `$CODEX_HOME/AGENTS.md` when `CODEX_HOME` is set,
+otherwise `~/.codex/AGENTS.md`. Workflow references are copied to
 `~/.agents/workflows/`. Override that directory with `-WorkflowsRoot <directory>`
 or `--workflows-root <directory>` when needed. `-TargetRoot` / the positional
 shell directory still controls only the skill store.
 
-For `AGENTS.md` and the CodeGraph reference, installers prefer **file symlinks**,
-not hard links. Workflow references are always copied into `~/.agents/workflows/`.
+For `AGENTS.md`, installers prefer a **file symlink**, not a hard link. Workflow references are always copied into `~/.agents/workflows/`.
 On Windows, unlike skill-directory junctions, file symlinks can require Developer
 Mode or appropriate privileges. There is no silent fallback or privilege escalation.
 If symlinks are not permitted, explicitly select copy mode for the global files:
@@ -153,8 +146,7 @@ previously created skill links can remain and rerunning is safe.
 After migration, start a **new Codex session** and ask it to summarize its active
 instructions. Do not assume an existing chat has reloaded the file.
 The router reads the installed files under `~/.agents/workflows/` when their
-conditions apply and uses the installed CodeGraph reference. The installer does
-not install CLI/MCP tools.
+conditions apply. The installer does not install CLI/MCP tools.
 
 If an earlier draft was installed, remove only its obsolete managed links to
 `instructions/AGENTS.md`, `skills/frontend`, and `skills/codegraph` before reinstalling.
@@ -162,8 +154,8 @@ Do not remove unrelated local skills or the links' source files.
 
 ### Synchronizing the global files
 
-Edit `AGENTS.md`, `references/codegraph.md`, or a file under `workflows/` in
-this checkout, commit and push, then run `git pull` on the other computer.
+Edit `AGENTS.md` or a file under `workflows/` in this checkout, commit and push,
+then run `git pull` on the other computer.
 Symlinked global files update immediately after pull. Workflow references are copies,
 so rerun the installer with the replacement flag after workflow changes. Run the
 installer after pulling newly added skills so their directory links are created too.

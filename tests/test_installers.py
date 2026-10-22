@@ -26,7 +26,7 @@ class InstallerTests(unittest.TestCase):
         self.base = Path(self.temp.name)
         self.repo = self.base / 'checkout with spaces'
         self.repo.mkdir()
-        for name in ('install.sh', 'install.ps1', 'scripts', 'AGENTS.md', 'references', 'workflows'):
+        for name in ('install.sh', 'install.ps1', 'scripts', 'AGENTS.md', 'workflows'):
             source = REPO / name
             dest = self.repo / name
             if source.is_dir():
@@ -34,7 +34,6 @@ class InstallerTests(unittest.TestCase):
             else:
                 shutil.copy2(source, dest)
         self.source = self.repo / 'AGENTS.md'
-        self.reference_source = self.repo / 'references' / 'codegraph.md'
         self.workflow_sources = {name: self.repo / 'workflows' / name for name in (
             'planning.md', 'investigation-rca.md', 'integration-tests.md',
             'observability.md', 'openspec.md')}
@@ -50,7 +49,6 @@ class InstallerTests(unittest.TestCase):
         self.workflows = self.base / 'workflow store'
         self.env = {**os.environ, 'HOME': str(self.home), 'CODEX_HOME': str(self.codex)}
         self.target = self.codex / 'AGENTS.md'
-        self.reference_target = self.codex / 'references' / 'codegraph.md'
         self.workflow_targets = {name: self.workflows / name for name in self.workflow_sources}
 
     def run_install(self, *, agents=True, copy=False, replace=False,
@@ -107,7 +105,6 @@ class InstallerTests(unittest.TestCase):
         self.target.write_text('local rules', encoding='utf-8')
         self.run_install(agents=False)
         self.assertEqual(self.target.read_text(), 'local rules')
-        self.assertFalse(self.reference_target.exists())
         self.assertFalse(self.workflows.exists())
         installed = self.skills / 'fixture-skill'
         self.assertEqual((installed / 'SKILL.md').read_text(), 'fixture skill')
@@ -198,7 +195,6 @@ class InstallerTests(unittest.TestCase):
         alternate = self.base / 'alternate home'
         self.run_install(copy=True, codex=alternate)
         self.assertEqual((alternate / 'AGENTS.md').read_bytes(), self.source.read_bytes())
-        self.assertEqual((alternate / 'references' / 'codegraph.md').read_bytes(), self.reference_source.read_bytes())
         for name, source in self.workflow_sources.items():
             self.assertEqual(self.workflow_targets[name].read_bytes(), source.read_bytes())
             self.assertFalse(self.workflow_targets[name].is_symlink())
@@ -235,65 +231,12 @@ class InstallerTests(unittest.TestCase):
         self.assertEqual([p.read_bytes() for p in backups], [original])
         self.assert_no_staging()
 
-    def test_reference_link_is_idempotent_and_tracks_source_replacement(self):
-        self.run_install()
-        self.assertTrue(self.reference_target.is_symlink())
-        self.assertEqual(self.reference_target.resolve(), self.reference_source.resolve())
-        self.run_install()
-        new_source = self.reference_source.with_suffix('.new')
-        new_source.write_bytes(b'updated reference\n')
-        os.replace(new_source, self.reference_source)
-        self.assertEqual(self.reference_target.read_bytes(), b'updated reference\n')
-        self.assertEqual(list(self.reference_target.parent.glob('*.backup.*')), [])
-        self.assert_no_staging()
-
-    def test_reference_copy_update_is_explicit_and_preserves_old_bytes(self):
-        self.run_install(copy=True)
-        original = self.reference_source.read_bytes()
-        self.assertFalse(self.reference_target.is_symlink())
-        self.assertEqual(self.reference_target.read_bytes(), original)
-        self.run_install(copy=True)
-        self.assertEqual(list(self.reference_target.parent.glob('*.backup.*')), [])
-        self.reference_source.write_bytes(b'new reference\n')
-        self.run_install(copy=True, success=False)
-        self.assertEqual(self.reference_target.read_bytes(), original)
-        self.run_install(copy=True, replace=True)
-        self.assertEqual(self.reference_target.read_bytes(), b'new reference\n')
-        backups = list(self.reference_target.parent.glob('codegraph.md.backup.*'))
-        self.assertEqual([p.read_bytes() for p in backups], [original])
-        self.assertEqual(self.backups(), [])
-        self.assert_no_staging()
-
-    def test_reference_collision_does_not_activate_agents(self):
-        self.target.write_bytes(b'local global rules')
-        self.reference_target.parent.mkdir()
-        foreign = self.base / 'foreign reference.md'
-        foreign.write_bytes(b'foreign reference')
-        for source in (foreign, self.base / 'missing reference.md'):
-            with self.subTest(source=source):
-                self.reference_target.symlink_to(source)
-                original_target = os.readlink(self.reference_target)
-                try:
-                    self.run_install(copy=True, replace=True, success=False)
-                    self.assertEqual(os.readlink(self.reference_target), original_target)
-                    self.assertEqual(self.target.read_bytes(), b'local global rules')
-                finally:
-                    self.reference_target.unlink(missing_ok=True)
-        self.reference_target.mkdir()
-        keep = self.reference_target / 'keep'
-        keep.write_bytes(b'keep')
-        self.run_install(copy=True, replace=True, success=False)
-        self.assertEqual(keep.read_bytes(), b'keep')
-        self.assertEqual(self.target.read_bytes(), b'local global rules')
-        self.assertEqual(foreign.read_bytes(), b'foreign reference')
-        self.assertEqual(self.backups(), [])
 
     @unittest.skipIf(args.powershell, 'POSIX HOME fallback; Windows uses native $HOME')
     def test_default_home_without_codex_home(self):
         self.env.pop('CODEX_HOME')
         self.run_install(copy=True, default_skills=True)
         self.assertEqual((self.home / '.codex' / 'AGENTS.md').read_bytes(), self.source.read_bytes())
-        self.assertEqual((self.home / '.codex' / 'references' / 'codegraph.md').read_bytes(), self.reference_source.read_bytes())
         for name, source in self.workflow_sources.items():
             target = self.home / '.agents' / 'workflows' / name
             self.assertEqual(target.read_bytes(), source.read_bytes())
