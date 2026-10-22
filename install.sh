@@ -2,60 +2,48 @@
 set -eu
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-SOURCE_ROOT="$SCRIPT_DIR/skills"
-TARGET_ROOT="${1:-$HOME/.agents/skills}"
+SKILLS_SOURCE="$SCRIPT_DIR/skills"
+WORKFLOWS_SOURCE="$SCRIPT_DIR/workflows"
+AGENTS_SOURCE="$SCRIPT_DIR/AGENTS.md"
 
-if [ ! -d "$SOURCE_ROOT" ]; then
-  echo "Skills directory not found: $SOURCE_ROOT" >&2
+usage() {
+  echo "Usage: $0 <codex|pi|opencode>" >&2
+  exit 1
+}
+
+[ "$#" -eq 1 ] || usage
+AGENT=$1
+
+case "$AGENT" in
+  codex) AGENT_ROOT="$HOME/.codex" ;;
+  pi) AGENT_ROOT="$HOME/.pi/agent" ;;
+  opencode) AGENT_ROOT="$HOME/.config/opencode" ;;
+  *) usage ;;
+esac
+
+SKILLS_ROOT="$AGENT_ROOT/skills"
+WORKFLOWS_ROOT="$AGENT_ROOT/workflows"
+AGENTS_PATH="$AGENT_ROOT/AGENTS.md"
+
+[ -d "$SKILLS_SOURCE" ] || { echo "Skills directory not found: $SKILLS_SOURCE" >&2; exit 1; }
+[ -d "$WORKFLOWS_SOURCE" ] || { echo "Workflows directory not found: $WORKFLOWS_SOURCE" >&2; exit 1; }
+[ -f "$AGENTS_SOURCE" ] || { echo "AGENTS.md not found: $AGENTS_SOURCE" >&2; exit 1; }
+
+for target in "$SKILLS_ROOT" "$WORKFLOWS_ROOT" "$AGENTS_PATH"; do
+  if [ -e "$target" ] || [ -L "$target" ]; then
+    echo "Target already exists: $target" >&2
+    exit 2
+  fi
+done
+
+mkdir -p "$AGENT_ROOT"
+ln -s "$SKILLS_SOURCE" "$SKILLS_ROOT"
+ln -s "$WORKFLOWS_SOURCE" "$WORKFLOWS_ROOT"
+if ! ln -s "$AGENTS_SOURCE" "$AGENTS_PATH"; then
+  rm -f "$WORKFLOWS_ROOT" "$SKILLS_ROOT"
   exit 1
 fi
 
-mkdir -p "$TARGET_ROOT"
-
-for source in "$SOURCE_ROOT"/*; do
-  [ -d "$source" ] || continue
-  if [ -f "$source/profile.example.yaml" ] && [ ! -e "$source/profile.yaml" ]; then
-    cp "$source/profile.example.yaml" "$source/profile.yaml"
-    printf '[init] %s profile.yaml from profile.example.yaml\n' "$(basename "$source")"
-  fi
-done
-
-created=0
-existing=0
-collisions=0
-
-for source in "$SOURCE_ROOT"/*; do
-  [ -d "$source" ] || continue
-
-  name=$(basename "$source")
-  target="$TARGET_ROOT/$name"
-
-  if [ -L "$target" ]; then
-    current=$(readlink "$target")
-    if [ "$current" = "$source" ]; then
-      printf '[ok]   %s -> %s\n' "$name" "$source"
-      existing=$((existing + 1))
-    else
-      printf '[skip] %s: link points to %s instead of %s\n' "$name" "$current" "$source" >&2
-      collisions=$((collisions + 1))
-    fi
-    continue
-  fi
-
-  if [ -e "$target" ]; then
-    printf '[skip] %s: target already exists and is not a symlink: %s\n' "$name" "$target" >&2
-    collisions=$((collisions + 1))
-    continue
-  fi
-
-  ln -s "$source" "$target"
-  printf '[link] %s -> %s\n' "$name" "$source"
-  created=$((created + 1))
-done
-
-printf '\nInstalled skill links in: %s\n' "$TARGET_ROOT"
-printf 'Created: %s; already correct: %s; collisions: %s\n' "$created" "$existing" "$collisions"
-
-if [ "$collisions" -gt 0 ]; then
-  exit 2
-fi
+printf '[link] %s skills -> %s\n' "$AGENT" "$SKILLS_SOURCE"
+printf '[link] %s workflows -> %s\n' "$AGENT" "$WORKFLOWS_SOURCE"
+printf '[link] %s AGENTS.md -> %s\n' "$AGENT" "$AGENTS_SOURCE"

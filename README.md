@@ -1,13 +1,17 @@
 # agent-skills
 
-Personal collection of reusable agent skills, kept in Git so the same workflows can be used across multiple computers and repositories.
-
-The repository is the source of truth for the skill definitions. Installation does **not** copy skills into the agent store: it creates one link per skill, so a normal `git pull` updates the installed skills immediately.
+Personal collection of reusable agent skills and global instructions, kept in Git so the same setup can be used across multiple computers and coding-agent harnesses.
 
 ## Layout
 
 ```text
 agent-skills/
+├── AGENTS.md
+├── workflows/
+│   ├── planning.md
+│   ├── investigation-rca.md
+│   ├── integration-tests.md
+│   └── observability.md
 ├── skills/
 │   ├── coding-quality/
 │   ├── create-pr/
@@ -18,74 +22,56 @@ agent-skills/
 └── install.sh
 ```
 
-Every direct subdirectory under `skills/` is treated as an installable skill. Files directly under `skills/` are ignored by the installers.
+The installer always links all three parts — `skills/`, `workflows/`, and `AGENTS.md` — into the selected harness configuration directory.
+
+Supported harnesses:
+
+| Agent | Global directory |
+| --- | --- |
+| Codex | `~/.codex` |
+| Pi | `~/.pi/agent` |
+| OpenCode | `~/.config/opencode` |
+
+These locations match the harnesses' global instruction directories. Codex skills use `~/.codex/skills`; Pi and OpenCode also support their native global skill directories used here.
 
 ## Install
 
-Clone the repository anywhere convenient:
-
-```bash
-git clone https://github.com/vpribytkov/agent-skills.git
-cd agent-skills
-```
+Clone this repository into a stable location, then select the harness.
 
 ### Windows
 
 ```powershell
-.\install.ps1
+.\install.ps1 -Agent codex
+.\install.ps1 -Agent pi
+.\install.ps1 -Agent opencode
 ```
 
-The default target is:
-
-```text
-%USERPROFILE%\.agents\skills
-```
-
-The script creates a directory junction for every skill, which avoids copying files and normally does not require Developer Mode or administrator privileges.
-
-To install into another skill store:
-
-```powershell
-.\install.ps1 -TargetRoot "$HOME\.claude\skills"
-```
+Directory targets are installed as junctions. `AGENTS.md` is installed as a file symlink, which can require Developer Mode or appropriate privileges.
 
 ### macOS / Linux
 
 ```bash
-sh ./install.sh
+sh ./install.sh codex
+sh ./install.sh pi
+sh ./install.sh opencode
 ```
 
-The default target is:
+All targets are symlinks.
+
+The resulting layout for the selected harness is:
 
 ```text
-~/.agents/skills
+<agent-root>/
+├── AGENTS.md   -> <repo>/AGENTS.md
+├── skills/     -> <repo>/skills/
+└── workflows/  -> <repo>/workflows/
 ```
 
-Pass another target as the first argument when needed:
+The installer never replaces an existing target. If `AGENTS.md`, `skills/`, or `workflows/` already exists in the selected harness directory, installation stops with an error. Move or remove the old target explicitly, then rerun the installer.
 
-```bash
-sh ./install.sh ~/.claude/skills
-```
+Because all three targets point directly at this checkout, changes become visible after `git pull` without reinstalling.
 
-## Collision policy
-
-The installers are deliberately conservative:
-
-- an already-correct link is left unchanged;
-- an existing real directory/file or a link to another source is **not** overwritten;
-- collisions are reported and must be resolved manually.
-
-This allows repository-managed skills to coexist with unrelated locally installed skills.
-
-## Updating
-
-Because installed skills point directly at this checkout, synchronization is just:
-
-```bash
-git pull
-```
-
-Changes become visible through the existing links immediately.
+Do not install from a temporary worktree that will be deleted. Use a stable checkout.
 
 ## Adding a skill
 
@@ -97,19 +83,10 @@ skills/
     └── SKILL.md
 ```
 
-Then rerun the installer on each machine. Existing links are kept; only missing skill links are created.
+Because the whole `skills/` directory is linked, newly added skills appear after `git pull` without rerunning the installer.
 
 ## Machine-specific configuration
 
 Keep machine-specific values, credentials, private service identifiers, and other secrets out of this repository.
 
-If a skill needs machine-local configuration, keep a tracked `profile.example.yaml` (or equivalent template) and an ignored local `profile.yaml`. The installers initialize the local profile only when it is missing and never overwrite it. Do not commit secrets to this public repository.
-
-## Design goals
-
-- one Git repository for reusable skills;
-- no manual copying between computers;
-- no takeover of the entire agent skill directory;
-- safe coexistence with local-only skills;
-- updates through ordinary Git operations;
-- Windows and Unix-like installation paths supported.
+If a skill needs machine-local configuration, keep a tracked `profile.example.yaml` (or equivalent template) and an ignored local `profile.yaml`. Do not commit secrets to this public repository.
