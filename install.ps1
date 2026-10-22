@@ -33,31 +33,47 @@ switch ($Agent) {
     }
 }
 
-$SkillsRoot = Join-Path $AgentRoot "skills"
-$WorkflowsRoot = Join-Path $AgentRoot "workflows"
-$AgentsPath = Join-Path $AgentRoot "AGENTS.md"
-
-foreach ($target in @($SkillsRoot, $WorkflowsRoot, $AgentsPath)) {
-    if ($null -ne (Get-Item -LiteralPath $target -Force -ErrorAction SilentlyContinue)) {
-        throw "Target already exists: $target"
+$Targets = @(
+    @{
+        Name = "skills"
+        Path = Join-Path $AgentRoot "skills"
+        Source = $SkillsSource
+        Type = "Junction"
+    },
+    @{
+        Name = "workflows"
+        Path = Join-Path $AgentRoot "workflows"
+        Source = $WorkflowsSource
+        Type = "Junction"
+    },
+    @{
+        Name = "AGENTS.md"
+        Path = Join-Path $AgentRoot "AGENTS.md"
+        Source = $AgentsSource
+        Type = "SymbolicLink"
     }
-}
+)
 
 New-Item -ItemType Directory -Force -Path $AgentRoot | Out-Null
 
-try {
-    New-Item -ItemType Junction -Path $SkillsRoot -Target $SkillsSource | Out-Null
-    New-Item -ItemType Junction -Path $WorkflowsRoot -Target $WorkflowsSource | Out-Null
-    New-Item -ItemType SymbolicLink -Path $AgentsPath -Target $AgentsSource | Out-Null
-} catch {
-    foreach ($target in @($AgentsPath, $WorkflowsRoot, $SkillsRoot)) {
-        if ($null -ne (Get-Item -LiteralPath $target -Force -ErrorAction SilentlyContinue)) {
-            Remove-Item -LiteralPath $target -Force
-        }
+$Failed = $false
+
+foreach ($entry in $Targets) {
+    $existing = Get-Item -LiteralPath $entry.Path -Force -ErrorAction SilentlyContinue
+    if ($null -ne $existing) {
+        Write-Host "[skip] $Agent $($entry.Name) -> $($entry.Path) (already exists)"
+        continue
     }
-    throw
+
+    try {
+        New-Item -ItemType $entry.Type -Path $entry.Path -Target $entry.Source | Out-Null
+        Write-Host "[link] $Agent $($entry.Name) -> $($entry.Source)"
+    } catch {
+        $Failed = $true
+        Write-Host "[error] $Agent $($entry.Name) -> $($entry.Path): $($_.Exception.Message)"
+    }
 }
 
-Write-Host "[link] $Agent skills -> $SkillsSource"
-Write-Host "[link] $Agent workflows -> $WorkflowsSource"
-Write-Host "[link] $Agent AGENTS.md -> $AgentsSource"
+if ($Failed) {
+    throw "Installation completed with one or more link errors."
+}
