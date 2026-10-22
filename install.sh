@@ -2,38 +2,46 @@
 set -eu
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-SOURCE_ROOT="$SCRIPT_DIR/skills"
-TARGET_ROOT="$HOME/.agents/skills"
-CODEX_DIR="${CODEX_HOME:-$HOME/.codex}"
-WORKFLOW_DIR="$HOME/.agents/workflows"
-INSTALL_AGENTS=false
-AGENTS_OPTIONS=false
-TARGET_SET=false
+SKILLS_SOURCE="$SCRIPT_DIR/skills"
+WORKFLOWS_SOURCE="$SCRIPT_DIR/workflows"
+AGENTS_SOURCE="$SCRIPT_DIR/AGENTS.md"
+
+SKILLS_ROOT="$HOME/.agents/skills"
+WORKFLOWS_ROOT="$HOME/.agents/workflows"
+AGENTS_PATH="$HOME/.codex/AGENTS.md"
+
 while [ "$#" -gt 0 ]; do
   case "$1" in
-    --agents) INSTALL_AGENTS=true ;;
-    --codex-home)
-      [ "$#" -ge 2 ] && [ -n "$2" ] || { echo '--codex-home requires a directory.' >&2; exit 1; }
-      CODEX_DIR=$2; AGENTS_OPTIONS=true; shift ;;
+    --skills-root)
+      [ "$#" -ge 2 ] && [ -n "$2" ] || { echo '--skills-root requires a path.' >&2; exit 1; }
+      SKILLS_ROOT=$2
+      shift
+      ;;
     --workflows-root)
-      [ "$#" -ge 2 ] && [ -n "$2" ] || { echo '--workflows-root requires a directory.' >&2; exit 1; }
-      WORKFLOW_DIR=$2; AGENTS_OPTIONS=true; shift ;;
-    --*) echo "Unknown option: $1" >&2; exit 1 ;;
+      [ "$#" -ge 2 ] && [ -n "$2" ] || { echo '--workflows-root requires a path.' >&2; exit 1; }
+      WORKFLOWS_ROOT=$2
+      shift
+      ;;
+    --agents-path)
+      [ "$#" -ge 2 ] && [ -n "$2" ] || { echo '--agents-path requires a path.' >&2; exit 1; }
+      AGENTS_PATH=$2
+      shift
+      ;;
     *)
-      [ "$TARGET_SET" = false ] || { echo 'Only one skill target directory is accepted.' >&2; exit 1; }
-      TARGET_ROOT=$1; TARGET_SET=true ;;
+      echo "Unknown option: $1" >&2
+      exit 1
+      ;;
   esac
   shift
 done
-if [ "$INSTALL_AGENTS" = false ] && [ "$AGENTS_OPTIONS" = true ]; then
-  echo 'AGENTS options require --agents.' >&2
-  exit 1
-fi
 
-[ -d "$SOURCE_ROOT" ] || { echo "Skills directory not found: $SOURCE_ROOT" >&2; exit 1; }
-mkdir -p "$TARGET_ROOT"
+[ -d "$SKILLS_SOURCE" ] || { echo "Skills directory not found: $SKILLS_SOURCE" >&2; exit 1; }
+[ -d "$WORKFLOWS_SOURCE" ] || { echo "Workflows directory not found: $WORKFLOWS_SOURCE" >&2; exit 1; }
+[ -f "$AGENTS_SOURCE" ] || { echo "AGENTS.md not found: $AGENTS_SOURCE" >&2; exit 1; }
 
-for source in "$SOURCE_ROOT"/*; do
+mkdir -p "$SKILLS_ROOT"
+
+for source in "$SKILLS_SOURCE"/*; do
   [ -d "$source" ] || continue
   if [ -f "$source/profile.example.yaml" ] && [ ! -e "$source/profile.yaml" ]; then
     cp "$source/profile.example.yaml" "$source/profile.yaml"
@@ -45,10 +53,10 @@ created=0
 existing=0
 collisions=0
 
-for source in "$SOURCE_ROOT"/*; do
+for source in "$SKILLS_SOURCE"/*; do
   [ -d "$source" ] || continue
   name=$(basename "$source")
-  target="$TARGET_ROOT/$name"
+  target="$SKILLS_ROOT/$name"
 
   if [ -L "$target" ]; then
     current=$(readlink "$target")
@@ -73,35 +81,26 @@ for source in "$SOURCE_ROOT"/*; do
   created=$((created + 1))
 done
 
-printf '\nInstalled skill links in: %s\n' "$TARGET_ROOT"
+printf '\nInstalled skill links in: %s\n' "$SKILLS_ROOT"
 printf 'Created: %s; already correct: %s; collisions: %s\n' "$created" "$existing" "$collisions"
 
 [ "$collisions" -eq 0 ] || exit 2
 
-if [ "$INSTALL_AGENTS" = true ]; then
-  AGENTS_SOURCE="$SCRIPT_DIR/AGENTS.md"
-  WORKFLOWS_SOURCE="$SCRIPT_DIR/workflows"
-  AGENTS_TARGET="$CODEX_DIR/AGENTS.md"
-  [ -f "$AGENTS_SOURCE" ] || { echo "AGENTS.md not found: $AGENTS_SOURCE" >&2; exit 1; }
-  [ -d "$WORKFLOWS_SOURCE" ] || { echo "Workflows directory not found: $WORKFLOWS_SOURCE" >&2; exit 1; }
-
-  if [ -e "$AGENTS_TARGET" ] || [ -L "$AGENTS_TARGET" ]; then
-    echo "Target already exists: $AGENTS_TARGET" >&2
-    exit 2
-  fi
-  if [ -e "$WORKFLOW_DIR" ] || [ -L "$WORKFLOW_DIR" ]; then
-    echo "Target already exists: $WORKFLOW_DIR" >&2
-    exit 2
-  fi
-
-  mkdir -p "$CODEX_DIR" "$(dirname "$WORKFLOW_DIR")"
-  ln -s "$WORKFLOWS_SOURCE" "$WORKFLOW_DIR"
-  if ! ln -s "$AGENTS_SOURCE" "$AGENTS_TARGET"; then
-    rm -f "$WORKFLOW_DIR"
-    exit 1
-  fi
-
-  printf '[link] workflows -> %s\n' "$WORKFLOWS_SOURCE"
-  printf '[link] AGENTS.md -> %s\n' "$AGENTS_SOURCE"
-  printf 'Start a new Codex session to load the instructions.\n'
+if [ -e "$WORKFLOWS_ROOT" ] || [ -L "$WORKFLOWS_ROOT" ]; then
+  echo "Target already exists: $WORKFLOWS_ROOT" >&2
+  exit 2
 fi
+if [ -e "$AGENTS_PATH" ] || [ -L "$AGENTS_PATH" ]; then
+  echo "Target already exists: $AGENTS_PATH" >&2
+  exit 2
+fi
+
+mkdir -p "$(dirname "$WORKFLOWS_ROOT")" "$(dirname "$AGENTS_PATH")"
+ln -s "$WORKFLOWS_SOURCE" "$WORKFLOWS_ROOT"
+if ! ln -s "$AGENTS_SOURCE" "$AGENTS_PATH"; then
+  rm -f "$WORKFLOWS_ROOT"
+  exit 1
+fi
+
+printf '[link] workflows -> %s\n' "$WORKFLOWS_SOURCE"
+printf '[link] AGENTS.md -> %s\n' "$AGENTS_SOURCE"

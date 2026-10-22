@@ -1,26 +1,33 @@
 param(
-    [string]$TargetRoot = (Join-Path $HOME ".agents\skills"),
-    [switch]$InstallAgents,
+    [string]$SkillsRoot = (Join-Path $HOME ".agents\skills"),
     [string]$WorkflowsRoot = (Join-Path $HOME ".agents\workflows"),
-    [string]$CodexHome = $(if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $HOME ".codex" })
+    [string]$AgentsPath = (Join-Path $HOME ".codex\AGENTS.md")
 )
 
 $ErrorActionPreference = "Stop"
-if (-not $InstallAgents -and ($PSBoundParameters.ContainsKey("WorkflowsRoot") -or $PSBoundParameters.ContainsKey("CodexHome"))) {
-    throw "AGENTS options require -InstallAgents."
-}
 
 $RepoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
-$SourceRoot = Join-Path $RepoRoot "skills"
+$SkillsSource = Join-Path $RepoRoot "skills"
+$WorkflowsSource = [System.IO.Path]::GetFullPath((Join-Path $RepoRoot "workflows"))
+$AgentsSource = [System.IO.Path]::GetFullPath((Join-Path $RepoRoot "AGENTS.md"))
 
-if (-not (Test-Path -LiteralPath $SourceRoot -PathType Container)) {
-    throw "Skills directory not found: $SourceRoot"
+if (-not (Test-Path -LiteralPath $SkillsSource -PathType Container)) {
+    throw "Skills directory not found: $SkillsSource"
+}
+if (-not (Test-Path -LiteralPath $WorkflowsSource -PathType Container)) {
+    throw "Workflows directory not found: $WorkflowsSource"
+}
+if (-not (Test-Path -LiteralPath $AgentsSource -PathType Leaf)) {
+    throw "AGENTS.md not found: $AgentsSource"
 }
 
-$TargetRoot = [System.IO.Path]::GetFullPath($TargetRoot)
-New-Item -ItemType Directory -Force -Path $TargetRoot | Out-Null
+$SkillsRoot = [System.IO.Path]::GetFullPath($SkillsRoot)
+$WorkflowsRoot = [System.IO.Path]::GetFullPath($WorkflowsRoot)
+$AgentsPath = [System.IO.Path]::GetFullPath($AgentsPath)
 
-Get-ChildItem -LiteralPath $SourceRoot -Directory | ForEach-Object {
+New-Item -ItemType Directory -Force -Path $SkillsRoot | Out-Null
+
+Get-ChildItem -LiteralPath $SkillsSource -Directory | ForEach-Object {
     $exampleProfile = Join-Path $_.FullName "profile.example.yaml"
     $localProfile = Join-Path $_.FullName "profile.yaml"
     if ((Test-Path -LiteralPath $exampleProfile -PathType Leaf) -and -not (Test-Path -LiteralPath $localProfile)) {
@@ -33,11 +40,11 @@ $created = 0
 $existing = 0
 $collisions = 0
 
-Get-ChildItem -LiteralPath $SourceRoot -Directory | Sort-Object Name | ForEach-Object {
+Get-ChildItem -LiteralPath $SkillsSource -Directory | Sort-Object Name | ForEach-Object {
     $source = [System.IO.Path]::GetFullPath($_.FullName)
-    $target = Join-Path $TargetRoot $_.Name
-
+    $target = Join-Path $SkillsRoot $_.Name
     $current = Get-Item -LiteralPath $target -Force -ErrorAction SilentlyContinue
+
     if ($null -ne $current) {
         $currentTarget = $null
         if ($current.PSObject.Properties.Name -contains "Target" -and $current.Target) {
@@ -66,50 +73,34 @@ Get-ChildItem -LiteralPath $SourceRoot -Directory | Sort-Object Name | ForEach-O
 }
 
 Write-Host ""
-Write-Host "Installed skill links in: $TargetRoot"
+Write-Host "Installed skill links in: $SkillsRoot"
 Write-Host "Created: $created; already correct: $existing; collisions: $collisions"
 
 if ($collisions -gt 0) {
     exit 2
 }
 
-if ($InstallAgents) {
-    $agentsSource = [System.IO.Path]::GetFullPath((Join-Path $RepoRoot "AGENTS.md"))
-    $workflowsSource = [System.IO.Path]::GetFullPath((Join-Path $RepoRoot "workflows"))
-    $CodexHome = [System.IO.Path]::GetFullPath($CodexHome)
-    $WorkflowsRoot = [System.IO.Path]::GetFullPath($WorkflowsRoot)
-    $agentsTarget = Join-Path $CodexHome "AGENTS.md"
-
-    if (-not (Test-Path -LiteralPath $agentsSource -PathType Leaf)) {
-        throw "AGENTS.md not found: $agentsSource"
+foreach ($target in @($WorkflowsRoot, $AgentsPath)) {
+    if ($null -ne (Get-Item -LiteralPath $target -Force -ErrorAction SilentlyContinue)) {
+        throw "Target already exists: $target"
     }
-    if (-not (Test-Path -LiteralPath $workflowsSource -PathType Container)) {
-        throw "Workflows directory not found: $workflowsSource"
-    }
-
-    foreach ($target in @($agentsTarget, $WorkflowsRoot)) {
-        if ($null -ne (Get-Item -LiteralPath $target -Force -ErrorAction SilentlyContinue)) {
-            throw "Target already exists: $target"
-        }
-    }
-
-    New-Item -ItemType Directory -Force -Path $CodexHome | Out-Null
-    New-Item -ItemType Directory -Force -Path (Split-Path -Parent $WorkflowsRoot) | Out-Null
-
-    try {
-        New-Item -ItemType Junction -Path $WorkflowsRoot -Target $workflowsSource | Out-Null
-        New-Item -ItemType SymbolicLink -Path $agentsTarget -Target $agentsSource | Out-Null
-    } catch {
-        if ($null -ne (Get-Item -LiteralPath $agentsTarget -Force -ErrorAction SilentlyContinue)) {
-            Remove-Item -LiteralPath $agentsTarget -Force
-        }
-        if ($null -ne (Get-Item -LiteralPath $WorkflowsRoot -Force -ErrorAction SilentlyContinue)) {
-            Remove-Item -LiteralPath $WorkflowsRoot -Force
-        }
-        throw
-    }
-
-    Write-Host "[link] workflows -> $workflowsSource"
-    Write-Host "[link] AGENTS.md -> $agentsSource"
-    Write-Host "Start a new Codex session to load the instructions."
 }
+
+New-Item -ItemType Directory -Force -Path (Split-Path -Parent $WorkflowsRoot) | Out-Null
+New-Item -ItemType Directory -Force -Path (Split-Path -Parent $AgentsPath) | Out-Null
+
+try {
+    New-Item -ItemType Junction -Path $WorkflowsRoot -Target $WorkflowsSource | Out-Null
+    New-Item -ItemType SymbolicLink -Path $AgentsPath -Target $AgentsSource | Out-Null
+} catch {
+    if ($null -ne (Get-Item -LiteralPath $AgentsPath -Force -ErrorAction SilentlyContinue)) {
+        Remove-Item -LiteralPath $AgentsPath -Force
+    }
+    if ($null -ne (Get-Item -LiteralPath $WorkflowsRoot -Force -ErrorAction SilentlyContinue)) {
+        Remove-Item -LiteralPath $WorkflowsRoot -Force
+    }
+    throw
+}
+
+Write-Host "[link] workflows -> $WorkflowsSource"
+Write-Host "[link] AGENTS.md -> $AgentsSource"

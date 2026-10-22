@@ -39,25 +39,37 @@ git clone https://github.com/vpribytkov/agent-skills.git
 cd agent-skills
 ```
 
+The installer always installs all three parts:
+
+- skill directories;
+- the shared `workflows/` directory;
+- the global `AGENTS.md`.
+
 ### Windows
 
 ```powershell
 .\install.ps1
 ```
 
-The default target is:
+Default targets:
 
 ```text
-%USERPROFILE%\.agents\skills
+~/.agents/skills
+~/.agents/workflows
+~/.codex/AGENTS.md
 ```
 
-The script creates a directory junction for every skill, which avoids copying files and normally does not require Developer Mode or administrator privileges.
-
-To install into another skill store:
+Override any target when another harness uses different paths:
 
 ```powershell
-.\install.ps1 -TargetRoot "$HOME\.claude\skills"
+.\install.ps1 `
+  -SkillsRoot "$HOME\.claude\skills" `
+  -WorkflowsRoot "$HOME\.claude\workflows" `
+  -AgentsPath "$HOME\.claude\AGENTS.md"
 ```
+
+Skill and workflow directories use junctions. `AGENTS.md` uses a file symlink,
+which can require Developer Mode or appropriate privileges on Windows.
 
 ### macOS / Linux
 
@@ -65,40 +77,16 @@ To install into another skill store:
 sh ./install.sh
 ```
 
-The default target is:
-
-```text
-~/.agents/skills
-```
-
-Pass another target as the first argument when needed:
+Override targets explicitly when needed:
 
 ```bash
-sh ./install.sh ~/.claude/skills
+sh ./install.sh \
+  --skills-root "$HOME/.claude/skills" \
+  --workflows-root "$HOME/.claude/workflows" \
+  --agents-path "$HOME/.claude/AGENTS.md"
 ```
 
-## Global Codex instructions (opt-in)
-
-The root `AGENTS.md` is the single source of truth for the work and home rules.
-The ordinary install commands above still install **skills only**. To also install
-the global instructions and workflow files:
-
-```powershell
-.\install.ps1 -InstallAgents
-```
-
-```bash
-sh ./install.sh --agents
-```
-
-The global instruction destination is `$CODEX_HOME/AGENTS.md` when `CODEX_HOME`
-is set, otherwise `~/.codex/AGENTS.md`. The repository `workflows/` directory
-is linked to `~/.agents/workflows/`. `-WorkflowsRoot` / `--workflows-root`
-overrides that directory when needed.
-
-The workflows directory is linked like skill directories: a junction on Windows and
-a symlink on macOS/Linux. `AGENTS.md` is a file symlink. On Windows, creating that
-file symlink can require Developer Mode or appropriate privileges.
+Directories and `AGENTS.md` use symlinks.
 
 ### First migration and safety
 
@@ -107,12 +95,12 @@ target already exists, installation stops with an error. Move or remove the old 
 or link explicitly, then rerun the installer.
 
 The installer does not change `config.toml`, authentication files, or unrelated
-Codex state. Skill collisions stop the command before global installation;
+harness state. Skill collisions stop the command before the global links are created;
 previously created skill links can remain and rerunning is safe.
 
-After migration, start a **new Codex session**; existing chats do not reload the
-global file automatically. The router reads workflow files only when their conditions
-apply. The installer does not install CLI/MCP tools.
+After migration, start a new session in harnesses that load global instructions
+at session start. The router reads workflow files only when their conditions apply.
+The installer does not install CLI/MCP tools.
 
 ### Synchronizing the global files
 
@@ -123,8 +111,7 @@ become visible after `git pull`. Run the installer after pulling newly added ski
 so their directory links are created too.
 Git does not pull automatically.
 
-Do not link global instructions to a temporary worktree that will be deleted.
-Use a stable checkout.
+Do not link global instructions to a temporary worktree that will be deleted. Use a stable checkout.
 
 ## Skill collision policy
 
