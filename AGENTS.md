@@ -32,7 +32,7 @@
 
 ## Tooling
 
-- **CodeGraph** — if `.codegraph/` exists, use it first for structural questions: symbol location, callers/callees, dependency/reachability, ownership, and production-path tracing. Read the third-party reference at `$CODEX_HOME/references/codegraph.md` (default: `~/.codex/references/codegraph.md`); this rule takes precedence over the reference. Prefer MCP `codegraph_explore`; if unavailable on Windows, use `& "$env:LOCALAPPDATA\codegraph\current\bin\codegraph.cmd" explore '<symbols or question>'` with `sandbox_permissions="require_escalated"` where supported and permitted by the runtime. Use an explicitly configured machine-local path when different. Then inspect only the relevant current files/diff to verify the actual implementation and uncommitted changes. Prefer CodeGraph + targeted read/diff over repo-wide `rg`/find or broad file dumps. Do not probe PATH, search for installs, or download CodeGraph. If `.codegraph/` is absent, skip it. If the known tool is unavailable, report the limitation and continue with focused native inspection.
+- **CodeGraph** — if `.codegraph/` exists, use it first for structural questions: symbol location, callers/callees, dependency/reachability, ownership, and production-path tracing. Read the third-party reference at `$CODEX_HOME/references/codegraph.md` (default: `~/.codex/references/codegraph.md`); this rule takes precedence over the reference. Prefer MCP `codegraph_explore`; if unavailable on Windows, use `& "$env:LOCALAPPDATA\codegraph\current\bin\codegraph.cmd" explore '<symbols or question>'` with `sandbox_permissions="require_escalated"`. Use an explicitly configured machine-local path when different. Then inspect only the relevant current files/diff to verify the actual implementation and uncommitted changes. Prefer CodeGraph + targeted read/diff over repo-wide `rg`/find or broad file dumps. Do not probe PATH, search for installs, or download CodeGraph. If `.codegraph/` is absent, skip it. If the known tool is unavailable, report the limitation and continue with focused native inspection.
 - **OpenSpec** — when working with OpenSpec, load `openspec-conventions` for installed-command usage, change naming, and service mapping. Do not reinstall or download tools merely to locate them.
 - **Avito CLI** — in repositories that use it, prefer `avito fmt --compact`, `avito lint --compact`, and `avito service test --compact`. Otherwise use the repository's own commands; do not assume this CLI is installed everywhere.
 - **Go vendoring** — if Go commands fail due to a `vendor/` / `go.mod` mismatch, run `go mod vendor` and retry only when dependency-file changes are authorized and consistent with repository policy. For read-only/review/diagnosis tasks, report the blocker instead of changing files.
@@ -62,7 +62,7 @@
 - When debugging bugs, regressions, incidents, latency, logs/metrics, or RCA, load `investigation-rca`.
 - When working on Go/service/DB integration tests, load `integration-tests`.
 - When changing runtime behavior, metrics, logs, traces, or production readiness, load `observability`.
-- When writing a PR title/description or creating/updating a PR, use `create-pr`. Do not load a separate legacy `pr.md`.
+- When writing a PR title/description or creating/updating a PR, use `create-pr`.
 - Load routed skills and references only when relevant; never preload them. Use the skill location supplied by the runtime; the default user installation is `~/.agents/skills/<name>/SKILL.md`.
 
 ## Communication
