@@ -106,9 +106,7 @@ The installer never replaces an existing `AGENTS.md` or workflows target. If eit
 target already exists, installation stops with an error. Move or remove the old file
 or link explicitly, then rerun the installer.
 
-Any `AGENTS.override.md` (including an empty file or dangling link) blocks global
-installation until resolved manually: an override can shadow the shared rules.
-The installer never changes it, `config.toml`, authentication files, or unrelated
+The installer does not change `config.toml`, authentication files, or unrelated
 Codex state. Skill collisions stop the command before global installation;
 previously created skill links can remain and rerunning is safe.
 

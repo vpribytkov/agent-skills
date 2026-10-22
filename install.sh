@@ -82,15 +82,9 @@ if [ "$INSTALL_AGENTS" = true ]; then
   AGENTS_SOURCE="$SCRIPT_DIR/AGENTS.md"
   WORKFLOWS_SOURCE="$SCRIPT_DIR/workflows"
   AGENTS_TARGET="$CODEX_DIR/AGENTS.md"
-  OVERRIDE="$CODEX_DIR/AGENTS.override.md"
-
   [ -f "$AGENTS_SOURCE" ] || { echo "AGENTS.md not found: $AGENTS_SOURCE" >&2; exit 1; }
   [ -d "$WORKFLOWS_SOURCE" ] || { echo "Workflows directory not found: $WORKFLOWS_SOURCE" >&2; exit 1; }
 
-  if [ -e "$OVERRIDE" ] || [ -L "$OVERRIDE" ]; then
-    echo "Resolve $OVERRIDE manually before installing; it can shadow AGENTS.md." >&2
-    exit 2
-  fi
   if [ -e "$AGENTS_TARGET" ] || [ -L "$AGENTS_TARGET" ]; then
     echo "Target already exists: $AGENTS_TARGET" >&2
     exit 2

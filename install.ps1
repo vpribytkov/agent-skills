@@ -87,11 +87,6 @@ if ($InstallAgents) {
         throw "Workflows directory not found: $workflowsSource"
     }
 
-    $override = Join-Path $CodexHome "AGENTS.override.md"
-    if ($null -ne (Get-Item -LiteralPath $override -Force -ErrorAction SilentlyContinue)) {
-        throw "Resolve $override manually before installing; it can shadow AGENTS.md."
-    }
-
     foreach ($target in @($agentsTarget, $WorkflowsRoot)) {
         if ($null -ne (Get-Item -LiteralPath $target -Force -ErrorAction SilentlyContinue)) {
             throw "Target already exists: $target"

@@ -117,13 +117,6 @@ class InstallerTests(unittest.TestCase):
         self.assertEqual(os.readlink(self.agents_target), agents_link)
         self.assertEqual(self.workflows.resolve(), workflows_target)
 
-    def test_override_blocks_global_install(self):
-        override = self.codex / 'AGENTS.override.md'
-        override.write_text('override', encoding='utf-8')
-        self.run_install(success=False)
-        self.assertFalse(self.agents_target.exists())
-        self.assertFalse(self.workflows.exists())
-
     def test_skill_collision_blocks_global_install(self):
         collision = self.skills / 'fixture-skill'
         collision.mkdir(parents=True)
