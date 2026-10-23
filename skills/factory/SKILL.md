@@ -150,6 +150,19 @@ configured escalation condition, hand the remaining scoped work to the escalatio
 Do not silently substitute models or claim that reading YAML switched a model.
 If dispatch cannot honour the model/independence contract, report the limitation.
 
+## Progress commentary
+
+Keep the owner oriented with brief commentary using only progress the orchestrator
+already knows. Report when entering a Factory block and when a meaningful workflow
+transition occurs, such as Develop finishing and moving to Review, Review returning
+CHANGES, repair returning to Review, or Owner Review becoming ready.
+
+Prefer concrete stage/status wording over estimated percentages. When the current
+Develop executor is opaque to the orchestrator, do not invent sub-task progress;
+report only the block-level state. Do not add heartbeat timers, a progress protocol,
+new executor output requirements, dashboards or extra workflow state solely for
+commentary. Keep updates sparse and omit them when no meaningful state changed.
+
 ## Durable evidence and reconstruction
 
 Use the configured work-item system, repository, OpenSpec and PR/review system
