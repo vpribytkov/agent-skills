@@ -159,13 +159,17 @@ CHANGES, repair returning to Review, or Owner Review becoming ready.
 
 Prefer concrete stage/status wording over estimated percentages. Show the Factory
 pipeline with this fixed legend: `✓` for completed blocks, `◉` for the active
-block, and `○` for future blocks, for example:
-`Explore ✓ → Develop ◉ → Review ○ → Owner Review ○`.
-When the current Develop executor is opaque to the orchestrator, do not invent
-sub-task progress; report only the block-level state. Do not add heartbeat timers,
-a progress protocol, new executor output requirements, dashboards or extra workflow
-state solely for commentary. Keep updates sparse and omit them when no meaningful
-state changed.
+block, and `○` for future blocks. While Develop is active, append completed/total
+top-level OpenSpec task blocks when current durable evidence makes that count known,
+for example: `Explore ✓ → Develop 1/4 ◉ → Review ○ → Owner Review ○`.
+Count only top-level task blocks, not nested checklist items.
+
+When the current Develop executor is opaque to the orchestrator, do not invent or
+estimate intermediate progress. Keep the last count actually supported by durable
+task evidence, or omit the count if it cannot be established. Do not add heartbeat
+timers, a progress protocol, new executor output requirements, dashboards or extra
+workflow state solely for commentary. Keep updates sparse and omit them when no
+meaningful state changed.
 
 ## Durable evidence and reconstruction
 
