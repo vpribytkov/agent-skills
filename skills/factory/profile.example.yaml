@@ -100,7 +100,7 @@ review:
     enabled: true
     model: gpt-5.6-sol
     reasoning: medium
-    prompt: 'Review the changes in BASE..HEAD. Find material issues.'
+    prompt: 'Review this PR.'
   operations:
     read: 'Read the whole local candidate, relevant untracked files, accepted change and verification against the resolved base.'
     publish: 'Record local findings and PASS/CHANGES in the configured receipt store, bound to candidate contents and base.'
