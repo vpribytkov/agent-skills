@@ -36,7 +36,7 @@ Do not auto-select a profile by repo, hostname, environment or command argument.
 | `review.provider` | `skill_then_external` is the shared local-before-PR, external/CI-after-PR flow. `skill` (PR-only) and `ci` (external-only inside Develop) retain earlier explicit profile modes. |
 | `review.secondary.enabled` | Enables a second fresh independent local reviewer for each skill-based Review round. Omitted means disabled for existing profiles. |
 | `review.secondary.model`, `reasoning` | Model/reasoning pair for the secondary reviewer; required when enabled. |
-| `review.secondary.prompt` | Exact task text for the secondary reviewer. It receives the repository path plus exact base/head, but no Review skill, Factory review payload, first-review findings or inline accepted-change/verification context. |
+| `review.secondary.prompt` | Exact task text for the secondary reviewer. Factory supplies the repository path, exact PR link and exact base/head separately, matching the primary task's concrete PR identification. It receives no Review skill, Factory review payload, first-review findings or inline accepted-change/verification context. |
 | `review.identifiers` | Relevant review-agent/check IDs and any provider-specific PASS/CHANGES mapping. |
 | `review.operations.read`, `publish` | Current review evidence and result publication bindings. For CI, publish may be omitted when CI publishes its own results. |
 | `review.external.provider`, `identifiers` | Hybrid mode's external agent/provider, priority scope and terminal verdict mapping. |
