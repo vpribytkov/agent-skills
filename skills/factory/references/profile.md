@@ -34,9 +34,6 @@ Do not auto-select a profile by repo, hostname, environment or command argument.
 | `blocks.<name>.commands` | Alternative command/tool bindings for those same roles. |
 | `blocks.develop.escalation` | Optional model, reasoning and technical escalation criterion. |
 | `review.provider` | `skill_then_external` is the shared local-before-PR, external/CI-after-PR flow. `skill` (PR-only) and `ci` (external-only inside Develop) retain earlier explicit profile modes. |
-| `review.secondary.enabled` | Enables a second fresh independent local reviewer for each skill-based Review round. Omitted means disabled for existing profiles. |
-| `review.secondary.model`, `reasoning` | Model/reasoning pair for the secondary reviewer; required when enabled. |
-| `review.secondary.prompt` | Exact task text for the secondary reviewer. Factory supplies the repository path, exact PR link and exact base/head separately, matching the primary task's concrete PR identification. It receives no Review skill, Factory review payload, first-review findings or inline accepted-change/verification context. |
 | `review.identifiers` | Relevant review-agent/check IDs and any provider-specific PASS/CHANGES mapping. |
 | `review.operations.read`, `publish` | Current review evidence and result publication bindings. For CI, publish may be omitted when CI publishes its own results. |
 | `review.external.provider`, `identifiers` | Hybrid mode's external agent/provider, priority scope and terminal verdict mapping. |
@@ -53,9 +50,7 @@ permission to replace an explicitly configured but unavailable provider.
 The example selects the intended local-then-CI flow, with `when_parallel`
 worktrees. Its external check IDs and ranking policy must be filled on the machine;
 an empty required-review-check set is not an approval. Existing explicit review
-providers are not silently rewritten during installation or update. The optional
-secondary local reviewer is also not enabled implicitly for an existing machine-local
-profile; add `review.secondary` explicitly when that machine should use it.
+providers are not silently rewritten during installation or update.
 
 Skill/command roles: Explore needs `requirements`, `investigate`, `propose`,
 `summary`, `spec_review`, `revise`; Develop needs `apply`, `pr`, `verify`; enabled
@@ -89,10 +84,6 @@ but must not encode stage selection, repair, approval or finalization ordering.
   read/trigger bindings, verdict mapping and polling limits. Review omitted/disabled
   requires the CI review provider
   with identifiable required checks and terminal verdict mapping.
-- When `review.secondary.enabled: true`, require a nonempty model, supported
-  reasoning value and nonempty prompt. The secondary reviewer is valid only with
-  an enabled skill-based local Review; it is not an extra CI/external review stage.
-  Omitted `review.secondary` preserves single-review behavior for existing profiles.
 - Enabled blocks require available model/reasoning pairs. CI review still uses
   Develop's executor; no standalone reviewer model is required when disabled.
 - `next` requires candidate access and a nonempty literal prioritization prompt.
