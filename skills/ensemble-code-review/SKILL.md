@@ -110,12 +110,49 @@ Return one ordinary review result to the caller.
 - An OpenSpec `NOT_APPLICABLE` result does not block PASS by itself when the task legitimately has no OpenSpec change.
 - A failed/missing required child review is a limitation/blocker, not implicit PASS.
 
-Keep the final output concise:
+Keep the final output concise, but always include a source matrix after parent validation.
 
 1. Verdict: PASS / CHANGES
 2. Confirmed material findings, highest impact first
-3. Relevant non-blocking notes only when useful
-4. Verification limitations, if any
-5. Which independent passes completed: OpenSpec / code-review / raw
+3. Reviewer coverage matrix
+4. Reviewer summary
+5. Relevant non-blocking notes only when useful
+6. Verification limitations, if any
+7. Which independent passes completed: OpenSpec / code-review / raw
+
+### Reviewer coverage matrix
+
+Build one row per normalized underlying failure path after deduplication and validation.
+Do not create separate rows for wording variants of the same defect.
+
+Use:
+
+| Finding | OpenSpec verify | Code review | Raw | Status |
+| --- | :---: | :---: | :---: | --- |
+| <normalized failure path> | ✓ / — | ✓ / — | ✓ / — | confirmed / non-blocking / unsupported |
+
+Rules:
+
+- `✓` means that reviewer independently identified that failure path in its own result.
+- `—` means it did not.
+- `confirmed` means the parent validated the issue as real and material under the caller's threshold.
+- `non-blocking` means real but below the blocking/materiality threshold.
+- `unsupported` means the parent could not validate the concern or determined it was a false positive.
+- Do not give a reviewer credit merely because it inspected the same file or adjacent code.
+- Count uniqueness only after normalization and validation.
+
+### Reviewer summary
+
+Always add a compact per-reviewer summary using validated rows:
+
+| Reviewer | Confirmed | Unique confirmed | Non-blocking | Unsupported |
+| --- | ---: | ---: | ---: | ---: |
+| OpenSpec verify | N | N | N | N |
+| Code review | N | N | N | N |
+| Raw | N | N | N | N |
+
+A confirmed finding is unique when exactly one reviewer identified its normalized failure path.
+
+This matrix is part of the normal review result so the caller can judge the marginal value of each independent pass across real PRs. Do not persist a separate historical ledger or cumulative telemetry unless explicitly requested.
 
 Do not expose hidden chain-of-thought or create a separate review ledger.
