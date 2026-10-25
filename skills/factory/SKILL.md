@@ -144,13 +144,9 @@ current stage evidence, scoped responsibility and applicable instructions. Use
 old conversations. Return any material owner decision to the main chat and wait
 for its answer before continuing dependent work.
 
-Use at most one writable executor at a time per job. Review cannot be
-implementation self-review; Develop uses no per-task subagents or replacement apply
-framework. When a configured secondary local reviewer is enabled, the orchestrator may
-dispatch the primary and secondary Review executors concurrently because both are
-read-only and review the same frozen candidate/base. Do not mutate the candidate, start
-repair, or advance the workflow until both local reviews finish. On Develop's configured
-escalation condition, hand the remaining scoped work to the escalation model.
+Use at most one executor at a time per job. Review cannot be implementation
+self-review; Develop uses no per-task subagents or replacement apply framework. On its
+configured escalation condition, hand the remaining scoped work to the escalation model.
 Do not silently substitute models or claim that reading YAML switched a model.
 If dispatch cannot honour the model/independence contract, report the limitation.
 
@@ -291,26 +287,7 @@ report the actual blocker. A successful unrelated CI/build is not review accepta
 
 ## Review
 
-When `review.secondary.enabled: true`, each local skill-based Review round uses two
-fresh independent read-only reviewers over the same frozen candidate/base:
-
-- the primary reviewer uses the configured Review skill, model/reasoning and the
-  Factory review payload below;
-- the secondary reviewer uses `review.secondary.model` and
-  `review.secondary.reasoning`, receives no Review skill, no Factory review payload,
-  no first-review findings and no inline accepted-change/verification context. Give it
-  the repository path, exact PR link and exact base/head, matching the primary task's
-  concrete PR identification. Its task text is exactly the configured
-  `review.secondary.prompt`.
-
-Dispatch both concurrently when the host supports it. If concurrent dispatch is not
-available, run them independently without sharing findings. Wait for both before any
-candidate mutation. Union their material findings, resolve duplicates by failure path
-rather than wording, and send the combined validated set to Develop. PASS requires both
-reviewers to leave no unresolved material findings under the configured priority scope.
-A secondary infrastructure/model failure is a Review blocker, not implicit PASS.
-
-Append the text inside the following fenced block verbatim to every primary skill-based
+Append the text inside the following fenced block verbatim to every skill-based
 reviewer task, including re-review, alongside the usual task context and
 applicable instructions:
 
