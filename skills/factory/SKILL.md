@@ -298,8 +298,9 @@ fresh independent read-only reviewers over the same frozen candidate/base:
   Factory review payload below;
 - the secondary reviewer uses `review.secondary.model` and
   `review.secondary.reasoning`, receives no Review skill, no Factory review payload,
-  no first-review findings and no inline accepted-change/verification context beyond
-  the repository path plus exact base/head. Its task is exactly the configured
+  no first-review findings and no inline accepted-change/verification context. Give it
+  the repository path, exact PR link and exact base/head, matching the primary task's
+  concrete PR identification. Its task text is exactly the configured
   `review.secondary.prompt`.
 
 Dispatch both concurrently when the host supports it. If concurrent dispatch is not
