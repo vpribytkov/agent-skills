@@ -82,7 +82,7 @@ blocks:
     model: gpt-6.1-sol
     reasoning: high
     skills:
-      review: code-review-skill
+      review: ensemble-code-review
 
   owner_review:
     enabled: true
@@ -96,11 +96,6 @@ blocks:
 review:
   provider: skill_then_external
   identifiers: {}
-  secondary:
-    enabled: true
-    model: gpt-5.6-sol
-    reasoning: medium
-    prompt: 'Review this PR.'
   operations:
     read: 'Read the whole local candidate, relevant untracked files, accepted change and verification against the resolved base.'
     publish: 'Record local findings and PASS/CHANGES in the configured receipt store, bound to candidate contents and base.'
