@@ -361,9 +361,9 @@ disabling Review must never bypass technical review.
 Present the final candidate diff, current review history/verdict, exact verification
 evidence, concise logs/limitations and the unarchived change. Show the proposed
 spec-sync delta and configured provider-specific finalization actions/transitions.
-For ensemble review, show the finding coverage matrix and reviewer summary
-returned by ensemble-code-review for each round verbatim in the owner-facing
-packet, including earlier rounds when the final round has no findings.
+Show the findings summaries and any accompanying matrices returned by reviewers
+or review providers verbatim in the owner-facing packet for every round,
+including earlier rounds when the final round has no findings.
 Do not reinterpret, merge or recalculate these results.
 Ask the owner to approve this candidate **and** that finalization, or reject it.
 Rejection returns to the owning block: technical repair to Develop, changed intent
