@@ -361,6 +361,16 @@ disabling Review must never bypass technical review.
 Present the final candidate diff, current review history/verdict, exact verification
 evidence, concise logs/limitations and the unarchived change. Show the proposed
 spec-sync delta and configured provider-specific finalization actions/transitions.
+For multi-pass review, include a consolidated finding table across all review
+rounds in the owner-facing packet, even when the final round has no findings.
+Build it from the existing published review results; no separate ledger is needed.
+Use one row per validated failure path, showing its first-detection round/head,
+severity, independent detection by each reviewer, and resolution/current status.
+Distinguish a completed pass that did not report a finding from a pass that did
+not run or only saw the code after that finding was fixed. Preserve material
+scope differences between passes; do not present unavailable comparisons as misses.
+Count repeated findings once and summarize each reviewer's contribution across
+rounds without replacing the current head-bound verdict with historical findings.
 Ask the owner to approve this candidate **and** that finalization, or reject it.
 Rejection returns to the owning block: technical repair to Develop, changed intent
 to Explore. Silence and a machine PASS are not owner approval.
