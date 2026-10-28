@@ -51,7 +51,8 @@
 - Use `fork_turns="3"` only when the latest conversational decisions are genuinely required.
 - Never use `fork_turns="all"` and never omit `fork_turns` unless the user explicitly requests full-history inheritance.
 - With `fork_turns="none"`, send a self-contained task containing the necessary paths, constraints, facts, and expected output.
-- Before spawning more than 3 subagents, ask for explicit user confirmation.
+- Before each new spawn, count all subagents across the task tree currently running tasks (including waits for tools or child results), plus the new subagents being spawned. Ask for explicit user confirmation only if the resulting total would exceed 5 simultaneously active subagents.
+- This is a concurrency limit on new spawns, not a cumulative count of subagents created during the conversation. Exclude completed, stopped, and idle subagents and the root agent.
 
 ## Workflows
 

@@ -63,7 +63,7 @@ This is the primary system/code review pass.
 
 ### C. Raw review
 
-Model: `gpt-5.6-sol`
+Model: `gpt-6.1-sol`
 Reasoning: `medium`
 
 Do not load `code-review-skill`, `openspec-verify-change`, Factory review payload, findings from A/B, or accepted-change/verification prose unless the reviewer independently chooses to inspect repository-visible artifacts.
