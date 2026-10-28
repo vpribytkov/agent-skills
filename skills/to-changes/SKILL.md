@@ -5,19 +5,20 @@ description: Plan code-grounded OpenSpec changes and acceptance for a feature, i
 
 # To Changes
 
-Read the request, approved decisions, project rules and relevant code/tests.
-Do not invent product decisions.
+The user has a feature description, issue or technical design and needs an implementation breakdown.
+Propose a sequence of OpenSpec changes: scoped units of implementation and verification that together deliver the requested feature.
 
 ## Plan
-- Group by behavior, not layers or code size alone. Keep required failure handling together.
-- Each change must be reviewable and verifiable after its dependencies.
-- Split for concrete delivery, risk or project execution boundaries. Coordinate cross-repository changes through explicit contracts and dependencies.
-- Consider a thin real end-to-end path when it reduces uncertainty. Defer breadth, not correctness or safety.
-- Check coverage, dependencies and possible merges. One change, or no new work, is valid. Keep uncertain later changes provisional.
+1. Read the source request, approved decisions, project rules and relevant code/tests. Identify required behavior and acceptance criteria, what already works and what remains to implement. Flag unresolved product decisions instead of inventing them.
+2. Group the remaining implementation work into changes by delivered behavior, not technical layers or code size alone. Keep required failure handling with the behavior it protects.
+3. Make each change reviewable and verifiable after its dependencies. Split for concrete delivery, risk or project execution boundaries; specify shared contracts and delivery order between repositories.
+4. Order changes to reduce uncertainty early. Consider a narrow real end-to-end path when it reduces integration risk; defer supported variants, not required correctness or safety.
+5. Map every acceptance criterion to responsible changes and sufficient proof, reusing existing checks. Identify missing prerequisites and when to run each check.
+6. Check coverage and merge unnecessary splits. One change or no new work is valid. Keep uncertain later changes provisional.
 
 ## Return
-- Outcome, non-goals and baseline for improvements.
-- Changes: scope, repository/service, behavior, dependencies and concrete reason for separation.
+- The requested result for the whole feature, non-goals and baseline for improvements.
+- Changes: title, scope, repository/service, behavior, dependencies and concrete reason for separation.
 - Acceptance: criterion → responsible changes → expected result → proof, prerequisites and when to run.
 - First step and unresolved decisions.
 
