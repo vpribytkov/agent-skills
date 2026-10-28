@@ -14,7 +14,9 @@ Propose a sequence of OpenSpec changes: scoped units of implementation and verif
 3. Make each change reviewable and verifiable after its dependencies. Split for concrete delivery, risk or project execution boundaries; specify shared contracts and delivery order between repositories.
 4. Order changes to reduce uncertainty early. Consider a narrow real end-to-end path when it reduces integration risk; defer supported variants, not required correctness or safety.
 5. Map every acceptance criterion to responsible changes and sufficient proof, reusing existing checks. Identify missing prerequisites and when to run each check.
-6. Check coverage and merge unnecessary splits. One change or no new work is valid. Keep uncertain later changes provisional.
+6. Check coverage and sizing in both directions. Each change should have one concrete intent you can state in a sentence. Consider splitting independently useful outcomes; merge unnecessary splits. One change or no new work is valid. Keep uncertain later changes provisional.
+
+Sizing reference: [Writing Good Specs — Right-size the change](https://github.com/Fission-AI/OpenSpec/blob/main/docs/writing-specs.md#right-size-the-change).
 
 ## Return
 - The requested result for the whole feature, non-goals and baseline for improvements.
