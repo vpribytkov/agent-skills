@@ -54,11 +54,38 @@ $Targets = @(
     }
 )
 
+$LegacySkillsRoot = Join-Path $HOME ".agents\skills"
+if ($Agent -eq "codex" -and (Test-Path -LiteralPath $LegacySkillsRoot -PathType Container)) {
+    $Targets += @{
+        Name = ".agents/skills"
+        Path = $LegacySkillsRoot
+        Source = $SkillsSource
+        Type = "Junction"
+    }
+}
+
+$LinkTargets = @(
+    foreach ($entry in $Targets) {
+        if ($entry.Source -eq $SkillsSource -and (Test-Path -LiteralPath $entry.Path -PathType Container)) {
+            foreach ($skill in (Get-ChildItem -LiteralPath $SkillsSource -Directory | Sort-Object Name)) {
+                @{
+                    Name = "$($entry.Name)/$($skill.Name)"
+                    Path = Join-Path $entry.Path $skill.Name
+                    Source = $skill.FullName
+                    Type = "Junction"
+                }
+            }
+        } else {
+            $entry
+        }
+    }
+)
+
 New-Item -ItemType Directory -Force -Path $AgentRoot | Out-Null
 
 $Failed = $false
 
-foreach ($entry in $Targets) {
+foreach ($entry in $LinkTargets) {
     $existing = Get-Item -LiteralPath $entry.Path -Force -ErrorAction SilentlyContinue
     if ($null -ne $existing) {
         Write-Host "[skip] $Agent $($entry.Name) -> $($entry.Path) (already exists)"

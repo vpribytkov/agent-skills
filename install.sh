@@ -51,9 +51,28 @@ link_target() {
   fi
 }
 
-link_target "skills" "$SKILLS_SOURCE" "$SKILLS_ROOT"
+link_skills() {
+  skills_target=$1
+  skills_label=$2
+
+  if [ -d "$skills_target" ]; then
+    for skill_source in "$SKILLS_SOURCE"/*; do
+      [ -d "$skill_source" ] || continue
+      skill_name=${skill_source##*/}
+      link_target "$skills_label/$skill_name" "$skill_source" "$skills_target/$skill_name"
+    done
+  else
+    link_target "$skills_label" "$SKILLS_SOURCE" "$skills_target"
+  fi
+}
+
+link_skills "$SKILLS_ROOT" "skills"
 link_target "workflows" "$WORKFLOWS_SOURCE" "$WORKFLOWS_ROOT"
 link_target "AGENTS.md" "$AGENTS_SOURCE" "$AGENTS_PATH"
+
+if [ "$AGENT" = "codex" ] && [ -d "$HOME/.agents/skills" ]; then
+  link_skills "$HOME/.agents/skills" ".agents/skills"
+fi
 
 if [ "$failed" -ne 0 ]; then
   echo "Installation completed with one or more link errors." >&2
