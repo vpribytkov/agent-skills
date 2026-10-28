@@ -10,7 +10,7 @@ Verify their combined result against approved requirements, not just individual 
 
 ## Check
 1. Read the request, approved scope and project rules. Derive acceptance criteria from requirements, not implementation; use the to-changes map if available. If requirements or necessary context remain unclear after checking available sources, ask the user instead of guessing and pause dependent checks.
-2. Match each criterion to evidence. Check omissions and gaps between changes/services. Reuse results only while relevant inputs and assumptions remain valid.
+2. Inspect current code/tests, relevant archived OpenSpec changes and recorded verification results. Match each criterion to evidence; check omissions and gaps between changes/services. Completed tasks or historical PASS verdicts are not proof by themselves; reuse results only when relevant inputs and assumptions remain valid.
 3. Before running checks, show the acceptance map: criterion and source → expected result → reusable evidence or planned check. Wait for map approval when explicitly requested.
 4. Run only missing or invalidated authorized checks with existing tools. Choose the cheapest sufficient layer; require full E2E only where narrower checks are insufficient.
 5. Probe the most plausible failure through its result and next system decision. Distinguish inspection, mocks and real execution.
