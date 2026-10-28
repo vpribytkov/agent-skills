@@ -1,23 +1,23 @@
 ---
 name: verify-feature
-description: Verify a feature or milestone against approved acceptance criteria across its changes.
+description: Verify that implemented changes deliver an approved feature or milestone.
 ---
 
 # Verify Feature
 
-Read approved requirements and scope decisions, linked changes and project checks.
-Use the to-changes acceptance map when available; derive expectations from requirements, not the implementation under test.
+The user needs to check whether implemented changes deliver the intended feature or milestone.
+Verify their combined result against approved requirements, not just individual PRs.
 
 ## Check
-- Map every criterion to evidence; look for omitted requirements and gaps between changes/services.
-- Reuse proof while relevant inputs and assumptions remain valid. Run only missing or invalidated authorized checks using existing tools.
-- Use the cheapest authoritative layer. Require full E2E only for a property narrower checks cannot prove.
-- Probe the most plausible remaining failure through its outcome and next decision. Distinguish source inspection, mocks and real execution; do not overstate proof.
-- Respect approved exclusions. Report missing tooling; do not repair code, tests or specs, expand acceptance or mutate production without explicit approval.
+1. Read the request, approved scope and project rules. Derive acceptance criteria from requirements, not implementation; use the to-changes map if available.
+2. Match each criterion to evidence. Check omissions and gaps between changes/services. Reuse results only while relevant inputs and assumptions remain valid.
+3. Run only missing or invalidated authorized checks with existing tools. Choose the cheapest sufficient layer; require full E2E only where narrower checks are insufficient.
+4. Probe the most plausible failure through its result and next system decision. Distinguish inspection, mocks and real execution.
 
 ## Return
-- Scope, revisions/environment and verdict: PASS (all required criteria proven), FAIL (observed violation), or BLOCKED (missing evidence/decision).
-- Criterion → commands/results or other evidence → limitations.
-- Material gaps and smallest next action.
+- Evaluated feature/milestone, revisions and environment.
+- Criterion → evidence (commands/results) → limitations.
+- PASS: all required criteria proven; FAIL: observed violation; BLOCKED: missing required evidence/decision.
+- Gaps and smallest next action.
 
-A partial milestone is not the whole feature. PASS does not authorize deployment or replace owner approval.
+Respect approved exclusions. No repairs, scope expansion or production changes without approval. PASS does not authorize deployment or replace owner approval.
