@@ -265,6 +265,11 @@ CLI instructions. Implement and qualify through canonical repository checks;
 reuse expensive successful gates only while their declared inputs are unchanged.
 Failed or unavailable required checks are not qualification; stop the affected
 step instead of creating a PR or treating a fallback check as the same gate.
+When commits are authorized, preserve that permission explicitly in the Develop
+executor task and follow OpenSpec apply guidance for semantic commits as work
+progresses. Do not defer local commits until full qualification, review or PR
+preparation solely for workflow convenience; those are candidate gates, not
+commit gates. Respect explicit owner and repository restrictions.
 With `skill_then_external` and no PR yet, hand the qualified local candidate to
 independent Review before invoking PR preparation. After local PASS, prepare the PR
 through the configured PR skill/commands. A commit that only records the reviewed
