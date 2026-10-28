@@ -274,11 +274,35 @@ review gate. Keep the initial local result as historical evidence, without
 claiming it reviewed later repairs.
 For other providers, prepare/update the candidate PR as configured.
 
-For review findings, inspect the actual failure path and repair within approved
-intent. Do not reopen completed unrelated tasks or invent a second repair plan/
-ledger. Update existing tasks only where scope actually changes. Recheck changed
-behavior and invalidated gates, update the PR and return for independent review.
-Escalate conflicting feedback to the owner instead of silently changing intent.
+### Repair against the contract
+
+Include these instructions in every Develop repair dispatch, whether findings
+come from local Review, external/CI review or the owner:
+
+1. Validate findings against accepted specs/design and the production path;
+   reject unsupported claims with evidence. For confirmed issues, establish the
+   cause and violated requirement or invariant. Treat the reported example as a
+   counterexample to that contract, not the whole repair scope.
+2. Keep sufficient specs/design unchanged. If the contract or design is incomplete,
+   ambiguous or wrong, update only the affected artifacts and distinguishing
+   scenarios in the same unarchived change before implementation. Do not weaken
+   acceptance to match broken code. Escalate new material product, scope,
+   acceptance, ownership or architecture decisions and conflicting intent to the
+   main chat before proceeding; changed intent returns to Explore for owner
+   approval and invalidates affected acceptance.
+3. Reopen affected tasks even if scope is unchanged, then continue the configured
+   vanilla apply from refreshed change instructions. Restore the affected contract
+   across its production chain, not just the reported example. Do not reopen
+   unrelated work, regenerate the whole feature or create a separate repair plan.
+4. Derive focused checks from the contract independently of the fix. Cover the
+   reported failure and directly related supported variants sharing its cause,
+   including contrasting cases that must remain allowed. Exercise the real
+   producer-to-consumer transitions when the defect depends on them.
+
+Recheck affected behavior and invalidated gates, update the PR when one exists,
+and return for the configured independent review. In the existing repair receipt,
+briefly record the cause, contract reference or correction, and proof. Do not mark
+an affected task complete solely because the reported example now passes.
 
 With `review.provider: ci`, wait for the configured review checks against the
 current candidate, read material findings and run this same repair loop until
