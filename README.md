@@ -67,9 +67,11 @@ The resulting layout for the selected harness is:
 └── workflows/  -> <repo>/workflows/
 ```
 
-The installer never replaces an existing target. It checks all three targets independently: existing targets are reported as `[skip]`, missing targets are linked and reported as `[link]`, and link failures are reported as `[error]`. One occupied target does not prevent the installer from linking the others.
+The installer never replaces an existing target. Missing targets are linked and reported as `[link]`, occupied paths are reported as `[skip]`, and link failures are reported as `[error]`. One occupied target does not prevent the installer from linking the others.
 
-Because all three targets point directly at this checkout, changes become visible after `git pull` without reinstalling.
+If the selected harness already has a `skills/` directory, the installer adds an individual link for each missing skill instead of skipping the whole directory. Existing skills, files, and links are preserved. This also works when `skills/` is a directory link to a shared location.
+
+For Codex, the installer also adds missing skill links to `~/.agents/skills` if that directory already exists. This keeps installations made by earlier versions of these scripts up to date.
 
 Do not install from a temporary worktree that will be deleted. Use a stable checkout.
 
@@ -83,7 +85,17 @@ skills/
     └── SKILL.md
 ```
 
-Because the whole `skills/` directory is linked, newly added skills appear after `git pull` without rerunning the installer.
+When the whole `skills/` directory is linked, newly added skills appear after `git pull` automatically. When skills are linked individually into an existing directory, rerun the installer after `git pull` to add links for new skills:
+
+```powershell
+.\install.ps1 -Agent codex
+```
+
+```bash
+sh ./install.sh codex
+```
+
+Use `pi` or `opencode` instead of `codex` for the other harnesses.
 
 ## Machine-specific configuration
 
