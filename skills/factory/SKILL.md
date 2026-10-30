@@ -334,6 +334,16 @@ completed phase, observe a rejected command with a deferred native effect,
 or resume after an interrupted action. Trace only cases supported by the
 changed flow and follow the resulting state to its next decision.
 
+For user-facing features, inspect 2–3 representative real usage outcomes,
+including a same-type or repeated action when relevant. Ask whether the actual
+output lets the user understand or accomplish the approved intent, not merely
+whether the implementation passes the written acceptance checks. If readily
+available data would materially improve an otherwise ambiguous or unhelpful
+result without new dependencies or scope expansion, flag that as a product
+finding with a concrete example. Distinguish an improvement from a contract
+violation; do not invent required fields, demand exact-copy tests, or turn
+optional details into mandatory coverage.
+
 Before issuing the verdict, revisit material failure hypotheses raised during
 this review. Resolve each with a supported finding, concrete refuting evidence,
 or an explicit unresolved limitation; do not silently drop a hypothesis.
