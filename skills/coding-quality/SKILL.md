@@ -9,6 +9,8 @@ description: >
 
 # Coding Quality
 
+<!-- Source of added Ponytail wording: DietrichGebert/ponytail; Copyright (c) 2026 DietrichGebert, MIT. -->
+
 Apply this skill while shaping the implementation, before implementation decisions become fixed.
 
 The goal is not to make code conform to generic style doctrine. The goal is to make the requested behavior explicit, locally understandable, and easy to verify while preserving the repository's established design.
@@ -26,6 +28,8 @@ Do not redesign surrounding code, introduce new conventions, or expand task scop
 
 ## Prefer existing and native solutions
 
+Read the task and the code it touches. List every place your change must reach: callers, tests, fixtures, config, exports. Check what your change could break for users: data it would destroy or expose, callers that stop working. That is scope. Extra features are not.
+
 Before adding new code or dependencies, check whether the need is already
 satisfied by:
 
@@ -34,6 +38,10 @@ satisfied by:
 3. Native platform capabilities.
 4. Dependencies already used by the project.
 5. A small local implementation.
+
+Never add a dependency for a few lines.
+
+Can it be one line a reader gets at a glance? One line.
 
 Stop at the simplest option that fully satisfies the requirement.
 
@@ -143,6 +151,11 @@ if (!prerequisitesAvailable(...)) {
 
 Do not create helpers merely to hide syntax when the helper adds no meaning.
 
+## Comments
+
+- Comment only the why the code cannot show, in one line.
+- A shortcut with a known limit gets a code comment in this form: `shortcut: <the limit>, <when to upgrade>`.
+
 ## Prefer explicit outcomes
 
 Meaningfully different success, unavailable, invalid, skipped, or failure states should remain distinguishable when the domain or caller cares about the distinction.
@@ -162,6 +175,11 @@ Do not convert failures into unrelated fallback behavior unless explicitly requi
 Preserve useful causal information when propagating or translating errors.
 
 Do not introduce a new error-handling architecture solely to satisfy this skill.
+
+- Bug fix: before you edit, grep every caller of the function you touch, then fix the root cause once in the shared code.
+- Code you move or merge keeps its error handling and validation.
+
+Never cut: validation at trust boundaries, error handling that prevents data loss, security, accessibility, the calibration real hardware needs, anything the user asked for.
 
 ## Prefer the simplest sufficient design
 
@@ -184,7 +202,14 @@ without a current requirement that justifies them.
 
 An abstraction should remove more relevant complexity than it introduces.
 
+- No abstraction, wrapper, type conversion, option, config, boilerplate or "for later" code nobody asked for. Keep values in the form the platform already gives you. Deletion beats addition. Keep the structure the codebase already has: its layers, interfaces and conventions.
+- Between options of equal size, take the one that is correct on edge cases.
+
 ## Keep changes scoped
+
+Does it need to exist? Skip features, options and flexibility nobody asked for, and name them in one line. A vague request ("build me X") gets the smallest version that does the core job.
+
+- Be lazy about the solution, never about the change itself: finish every part the task needs, including the callers, tests and fixtures your change breaks.
 
 Change only what is needed to implement and safely verify the requested behavior.
 
@@ -229,6 +254,8 @@ When business logic contains distinct branches, verify the branches required by 
 
 This skill does not require TDD or prescribe the order in which implementation and tests must be written.
 
+- Lazy code without its check is unfinished: new non-trivial logic (a branch, a loop, a parser, money or security, or a whole new script or app) leaves one small test or an assert-based self-check. Trivial changes need none.
+
 ## Review
 
 When reviewing code, apply the same quality bar used during implementation.
@@ -248,33 +275,4 @@ Raise findings only when they materially improve correctness, understandability,
 
 Do not request stylistic churn merely to make the implementation resemble generic clean-code examples.
 
-## Ponytail additions
-
-<!-- Source: DietrichGebert/ponytail, Copyright (c) 2026 DietrichGebert (MIT; see repository LICENSE). -->
-
-You are a lazy senior developer. The best code is the code never written. You solve the whole problem with the least new code. End your reply with one or two lines: what you skipped or did not check, and any risk the user must know.
-
-Read the task and the code it touches. List every place your change must reach: callers, tests, fixtures, config, exports. Check what your change could break for users: data it would destroy or expose, callers that stop working. That is scope. Extra features are not.
-
-1. Does it need to exist? Skip features, options and flexibility nobody asked for, and name them in one line. A vague request ("build me X") gets the smallest version that does the core job.
-
-4. An installed dependency? Use it. Never add a dependency for a few lines.
-5. Can it be one line a reader gets at a glance? One line.
-
-- Be lazy about the solution, never about the change itself: finish every part the task needs, including the callers, tests and fixtures your change breaks.
-- No abstraction, wrapper, type conversion, option, config, boilerplate or "for later" code nobody asked for. Keep values in the form the platform already gives you. Deletion beats addition. Keep the structure the codebase already has: its layers, interfaces and conventions.
-
-- Comment only the why the code cannot show, in one line.
-- Bug fix: before you edit, grep every caller of the function you touch, then fix the root cause once in the shared code.
-- Code you move or merge keeps its error handling and validation.
-- Between options of equal size, take the one that is correct on edge cases.
-- Lazy code without its check is unfinished: new non-trivial logic (a branch, a loop, a parser, money or security, or a whole new script or app) leaves one small test or an assert-based self-check. Trivial changes need none.
-- A shortcut with a known limit gets a code comment in this form: `shortcut: <the limit>, <when to upgrade>`.
-
-Never cut: validation at trust boundaries, error handling that prevents data loss, security, accessibility, the calibration real hardware needs, anything the user asked for.
-
-| Level | Behavior |
-|-------|----------|
-| **lite** | Build what was asked. Name the smaller option in one line and let the user pick. |
-| **full** | The rules above. Default. |
-| **ultra** | Also question the request: before building, push back on any part the need does not justify. |
+End your reply with one or two lines: what you skipped or did not check, and any risk the user must know.
