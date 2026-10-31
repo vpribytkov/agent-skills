@@ -2,203 +2,59 @@
 name: coding-quality
 description: >
   Apply when designing, writing, modifying, or reviewing repository code.
-  Improve readability, control flow, local reasoning, naming, abstraction
-  boundaries, and error handling without expanding scope or overriding
-  project-specific requirements and patterns.
+  Prefer the smallest complete change while keeping domain decisions,
+  failure semantics, configuration, and verification explicit.
 ---
 
 # Coding Quality
 
-Apply this skill while shaping the implementation, before implementation decisions become fixed.
-
-The goal is not to make code conform to generic style doctrine. The goal is to make the requested behavior explicit, locally understandable, and easy to verify while preserving the repository's established design.
+Solve the approved task with the smallest **necessary** change. Minimize unnecessary behavior, code, and dependencies, not characters at the expense of clarity or safety.
 
 ## Precedence
-
-When guidance conflicts, follow this order:
 
 1. Explicit task, specification, and acceptance requirements.
 2. Repository and project instructions.
 3. Compatible existing local patterns.
 4. This skill.
 
-Do not redesign surrounding code, introduce new conventions, or expand task scope solely to satisfy this skill.
-
-## Configuration Is Data, Not Code
-
-When behavior is intentionally configuration-driven, keep configuration values out of implementation logic.
-
-- Runtime validation MUST validate the configuration schema and semantic invariants, not hardcode the currently committed configuration values.
-- A valid alternative configuration MUST work without requiring a code change unless the specification explicitly defines the value itself as a fixed system invariant.
-- Do not duplicate configurable policy in constants, switch branches, validators, defaults, or tests.
-- Tests SHOULD verify configuration parsing, validation rules, and behavior under representative alternative configurations. Do not assert the exact contents of committed configuration unless those exact values are an explicit product contract.
-- Before finalizing a configurable feature, perform a substitution check: change a valid configured value or policy shape mentally. If code or unrelated tests would need to change, the implementation is probably configurable hardcode.
-
-## Make business decisions explicit
-
-Code that chooses between materially different domain outcomes should expose those outcomes as distinct, readable branches.
-
-Prefer control flow that can be read top-to-bottom as the decision being made.
-
-Use guard clauses when independent conditions produce distinct terminal or classified outcomes.
-
-Prefer:
-
-```java
-if (cap == 0) {
-    return unavailable();
-}
-
-if (current >= cap) {
-    return alreadyReached();
-}
-
-if (next == null) {
-    return nothingToLearn();
-}
-
-if (!prerequisitesAvailable(...)) {
-    return prerequisitesMissing();
-}
-
-if (!resourcesAvailable(...)) {
-    return resourcesMissing();
-}
-
-return learnable(...);
-```
-
-over structures that first collapse unrelated conditions and then rediscover the actual reason:
-
-```java
-if (A || B || C || D) {
-    if (A) {
-        ...
-    } else if (B) {
-        ...
-    } else if (C) {
-        ...
-    }
-}
-```
-
-Do not mechanically split every compound condition.
-
-A compound condition is appropriate when its parts together express one domain decision and the individual causes do not matter to behavior, diagnostics, or understanding.
-
-## Optimize for local reasoning
-
-Prefer code whose behavior can be understood from the smallest reasonable local context.
-
-Keep related decisions and state transitions close together.
-
-Prefer straightforward control flow over clever expressions, hidden coupling, or indirection.
-
-Avoid making the reader jump between multiple helpers, abstractions, or files when the logic is clearer locally.
-
-## Keep abstraction levels coherent
-
-Code within one method or block should operate at a coherent conceptual level.
-
-Extract lower-level mechanics when they obscure the business decision being expressed.
-
-Do not extract helpers merely to:
-
-- reduce line count;
-- reduce visual size;
-- satisfy an arbitrary complexity metric;
-- avoid a small amount of readable duplication.
-
-A longer linear method that clearly expresses one workflow may be better than many small helpers that fragment the decision tree.
-
-## Name by intent
-
-Use names that communicate domain meaning rather than implementation mechanics.
-
-Names should expose the decision, state, action, invariant, or outcome they represent.
-
-Prefer named predicates when the name communicates meaningful domain intent:
-
-```java
-if (!prerequisitesAvailable(...)) {
-    ...
-}
-```
-
-Do not create helpers merely to hide syntax when the helper adds no meaning.
-
-## Prefer explicit outcomes
-
-Meaningfully different success, unavailable, invalid, skipped, or failure states should remain distinguishable when the domain or caller cares about the distinction.
-
-Do not blur different outcomes solely to shorten control flow.
-
-Do not introduce additional result types, exceptions, wrappers, or state models unless required by the task or consistent with the existing design.
-
-## Handle errors explicitly
-
-Follow the repository's established error-handling conventions.
-
-Do not silently swallow meaningful failures.
-
-Do not convert failures into unrelated fallback behavior unless explicitly required.
-
-Preserve useful causal information when propagating or translating errors.
-
-Do not introduce a new error-handling architecture solely to satisfy this skill.
-
-## Respect existing patterns
-
-Inspect relevant nearby code before choosing a structure.
-
-Prefer established repository conventions when they are compatible with the current requirements and do not reproduce a known defect.
-
-Do not introduce a new local style simply because generic guidance prefers it.
-
-Existing code is evidence of local conventions, not proof that every existing pattern is correct.
-
-## Avoid mechanical quality rules
-
-Do not impose generic numeric limits on:
-
-- function length;
-- parameter count;
-- nesting depth;
-- class size;
-- cyclomatic complexity;
-- number of helpers.
-
-Treat these as possible signals for inspection, not acceptance criteria.
-
-Judge whether the code is understandable, cohesive, locally reasoned, and appropriate for the requested behavior.
-
-## Testing
-
-Follow the project's existing testing rules and workflow.
-
-Tests should make materially different behavior and outcomes visible.
-
-Keep domain-relevant inputs and expected outcomes visible at the test case level. Use helpers to hide plumbing, not the behavior being verified.
-
-When business logic contains distinct branches, verify the branches required by the task rather than only the combined happy path.
-
-This skill does not require TDD or prescribe the order in which implementation and tests must be written.
-
-## Review
-
-When reviewing code, apply the same quality bar used during implementation.
-
-Look specifically for:
-
-- distinct domain outcomes hidden inside compound conditions;
-- unnecessary nesting;
-- business decisions obscured by low-level mechanics;
-- misleading or implementation-oriented names;
-- abstraction boundaries that make local reasoning harder;
-- failures or outcomes that have been accidentally collapsed;
-- speculative abstractions or machinery;
-- scope expansion unrelated to the task.
-
-Raise findings only when they materially improve correctness, understandability, maintainability, or verification of the requested behavior.
-
-Do not request stylistic churn merely to make the implementation resemble generic clean-code examples.
+Do not change approved behavior, architecture, or scope merely to satisfy this skill.
+
+## Choose and bound the change
+
+- Before editing, identify the observable outcome and relevant callers, consumers, variants, contracts, tests, fixtures, and configuration. Inspect enough of the real path to know what must change.
+- Prefer no new code when existing behavior already satisfies the task. Otherwise reuse repository code and patterns; then standard library or native platform features; then existing dependencies; only then implement a small local solution.
+- Avoid speculative abstractions, wrappers, options, dependencies, configuration, compatibility paths, and recovery machinery. Add them only when a current requirement justifies their cost.
+- Change every file required for correct behavior and verification, but nothing else. Preserve unrelated parsing, messages, interfaces, error handling, formatting, and supported behavior. No opportunistic rewrites or adjacent cleanup.
+- If an unrelated defect deserves attention, report it separately. Small supporting changes are allowed when necessary for correctness, clarity, or safe verification; explain that dependency.
+- Before handoff, compare the complete diff with the original request and approved requirements. Remove edits without a concrete necessity, even if they are harmless or pass tests.
+- Do not optimize for raw line count: a shorter solution is better only when it remains equally understandable, correct, and safe.
+
+## Make domain decisions clear
+
+- Keep materially different domain outcomes distinguishable. Prefer top-down control flow and guard clauses when separate conditions lead to separate results; do not collapse causes and rediscover them later.
+- Compound conditions are appropriate when their parts express one decision and separate causes do not matter. Do not split conditions mechanically.
+- Keep related decisions and state transitions together. Extract lower-level mechanics only when they obscure the business flow; do not create helpers merely to shorten a function or hide syntax.
+- Name variables and predicates by intent. Prefer local reasoning over clever expressions, hidden coupling, and unnecessary indirection.
+- Keep abstraction levels coherent and reuse compatible repository conventions. Existing patterns are evidence, not proof of correctness.
+- Preserve distinct success, unavailable, invalid, skipped, and failure states when the caller cares. Do not invent new result types or state models without a need.
+
+## Configuration is data, not code
+
+- Validate configuration schemas and semantic invariants, not the current committed values. Treat a value as fixed only when the specification explicitly requires it.
+- Alternative valid configuration must work without implementation changes. Do not duplicate configurable policy in constants, branches, validators, defaults, or tests.
+- Test parsing, invariants, and behavior with representative alternative configurations. Do not assert committed inventories or exact values unless they are a product contract.
+- Check whether changing a valid configured value would force code or unrelated tests to change; if so, investigate hardcoding.
+
+## Preserve failure behavior
+
+- Follow established error-handling conventions and keep necessary validation at trust boundaries.
+- Do not swallow meaningful failures, invent unrelated fallbacks, or discard useful causes when propagating errors.
+- Preserve data-safety, security, and relevant accessibility behavior when simplifying or moving code. Do not redesign error handling without a task requirement.
+
+## Testing and review
+
+- Derive test expectations from requirements and behavior contracts, not implementation constants or committed configuration content.
+- Make materially different behavior and outcomes visible in tests. Keep domain-relevant inputs and expected outcomes at the test case; use helpers for plumbing.
+- Use the project's canonical verification and the cheapest checks that reliably prove the required behavior. Do not introduce test frameworks, redundant fixtures, or extra integration layers without need.
+- In review, assess both correctness and necessity against the original task. A finding must identify a concrete behavior, risk, or avoidable maintenance cost and the smallest suitable correction.
+- Do not demand stylistic rewrites or arbitrary limits on function size, parameters, nesting, or complexity. Fewer lines alone are not proof of better code.

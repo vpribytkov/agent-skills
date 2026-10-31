@@ -260,8 +260,6 @@ automatically that suspension event; honor the transition's configured authority
 
 ## Develop
 
-For every Develop dispatch (initial implementation and repairs), instruct the executor to load and apply the bundled `ponytail` skill alongside the configured apply skill before making implementation decisions. Ponytail is not loaded for Explore or Review.
-
 Use the configured vanilla apply skill on the accepted change and its current
 CLI instructions. Implement and qualify through canonical repository checks;
 reuse expensive successful gates only while their declared inputs are unchanged.
