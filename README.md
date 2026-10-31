@@ -17,6 +17,7 @@ agent-skills/
 │   ├── create-pr/
 │   ├── factory/
 │   ├── openspec-*/
+│   ├── ponytail/
 │   └── ...
 ├── install.ps1
 └── install.sh
@@ -96,6 +97,19 @@ sh ./install.sh codex
 ```
 
 Use `pi` or `opencode` instead of `codex` for the other harnesses.
+
+## Ponytail in Factory
+
+`skills/ponytail/SKILL.md` is a [scoped adaptation of Ponytail](https://github.com/DietrichGebert/ponytail/blob/96608e078b2d5ea607c5c3b8b5a54d1c1fba6846/skills/ponytail/SKILL.md), licensed under MIT (see `skills/ponytail/LICENSE`). Factory explicitly loads it for Develop, including repairs. It does not install Ponytail's plugin hooks or inject rules into Review.
+
+After installing or pulling updates on Windows, verify the Codex paths:
+
+```powershell
+Get-Item "$HOME\.codex\AGENTS.md" -Force | Select-Object LinkType, Target
+Test-Path "$HOME\.codex\skills\ponytail\SKILL.md"
+```
+
+If `AGENTS.md` was reported as `[skip]`, the installer intentionally preserved the existing file. Check that it links to this repository; reconcile it manually if not.
 
 ## Machine-specific configuration
 

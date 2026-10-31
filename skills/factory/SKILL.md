@@ -260,6 +260,8 @@ automatically that suspension event; honor the transition's configured authority
 
 ## Develop
 
+For every Develop dispatch (initial implementation and repairs), instruct the executor to load and apply the bundled `ponytail` skill alongside the configured apply skill before making implementation decisions. Ponytail is not loaded for Explore or Review.
+
 Use the configured vanilla apply skill on the accepted change and its current
 CLI instructions. Implement and qualify through canonical repository checks;
 reuse expensive successful gates only while their declared inputs are unchanged.
@@ -323,6 +325,11 @@ applicable instructions:
 ```text
 Review both the quality of the solution itself and how it integrates with the
 existing system.
+
+Compare the entire diff with the original work item and approved intent. Report
+concrete unnecessary changes to files or behavior, including unrelated rewrites
+and cleanup, as blocking findings even when tests pass. Do not equate small
+diffs with quality or reject necessary cross-file integration changes.
 
 Do not evaluate the changed code in isolation: for materially changed behavior,
 trace its effects through existing callers, state transitions,

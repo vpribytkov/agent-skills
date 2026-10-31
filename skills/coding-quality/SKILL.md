@@ -24,23 +24,7 @@ When guidance conflicts, follow this order:
 
 Do not redesign surrounding code, introduce new conventions, or expand task scope solely to satisfy this skill.
 
-## Prefer existing and native solutions
-
-Before adding new code or dependencies, check whether the need is already
-satisfied by:
-
-1. Existing repository code or patterns.
-2. The language standard library.
-3. Native platform capabilities.
-4. Dependencies already used by the project.
-5. A small local implementation.
-
-Stop at the simplest option that fully satisfies the requirement.
-
-Do not prefer fewer lines when they make domain decisions, behavior, or failure
-modes harder to understand.
-
-### Configuration Is Data, Not Code
+## Configuration Is Data, Not Code
 
 When behavior is intentionally configuration-driven, keep configuration values out of implementation logic.
 
@@ -162,37 +146,6 @@ Do not convert failures into unrelated fallback behavior unless explicitly requi
 Preserve useful causal information when propagating or translating errors.
 
 Do not introduce a new error-handling architecture solely to satisfy this skill.
-
-## Prefer the simplest sufficient design
-
-Use the simplest implementation that fully satisfies the requested behavior.
-
-Prefer compatible existing patterns before introducing new abstractions.
-
-Do not add speculative:
-
-- interfaces;
-- extension points;
-- generalized frameworks;
-- value objects;
-- layers;
-- configuration;
-- indirection;
-- reusable machinery
-
-without a current requirement that justifies them.
-
-An abstraction should remove more relevant complexity than it introduces.
-
-## Keep changes scoped
-
-Change only what is needed to implement and safely verify the requested behavior.
-
-Do not use the task as an opportunity for unrelated cleanup.
-
-If nearby code has a significant issue outside the requested scope, report it rather than silently expanding the implementation.
-
-Small supporting cleanup is acceptable only when it is necessary to make the requested change correct, understandable, or safely testable.
 
 ## Respect existing patterns
 

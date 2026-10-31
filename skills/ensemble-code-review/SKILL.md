@@ -56,6 +56,7 @@ Task:
 - Resolve and use the installed `code-review-skill`.
 - Review the whole candidate against the exact base/head, repository instructions, work item, accepted intent, and applicable verification evidence.
 - Preserve the review skill's normal integration/system tracing behavior.
+- Compare changed files and behavior to the original work item and approved intent. Flag concrete unnecessary rewrites or unrelated edits even when tests pass; do not use line counts or penalize necessary supporting changes.
 - Do not mutate anything.
 - Return material findings, verdict, and explicit unresolved limitations.
 
@@ -93,7 +94,7 @@ The parent review executor owns aggregation:
 1. Bind every result to the same base/head. Ignore findings derived from a different candidate.
 2. Deduplicate by underlying failure path, not wording.
 3. Validate proposed material findings against production code and task intent before returning them, especially findings from the raw reviewer.
-4. Do not discard a finding merely because the other reviewers did not report it.
+4. Do not discard a finding merely because the other reviewers did not report it. Treat validated out-of-scope changes as material Factory findings, not optional style nits.
 5. Distinguish:
    - confirmed material finding;
    - non-blocking spec/test-quality note;
