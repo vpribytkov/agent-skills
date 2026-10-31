@@ -324,11 +324,6 @@ applicable instructions:
 Review both the quality of the solution itself and how it integrates with the
 existing system.
 
-Compare the entire diff with the original work item and approved intent. Report
-concrete unnecessary changes to files or behavior, including unrelated rewrites
-and cleanup, as blocking findings even when tests pass. Do not equate small
-diffs with quality or reject necessary cross-file integration changes.
-
 Do not evaluate the changed code in isolation: for materially changed behavior,
 trace its effects through existing callers, state transitions,
 persistence/recovery, and the next normal system decision. Verify that existing
