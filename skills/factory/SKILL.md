@@ -92,8 +92,15 @@ active; old START mentions and review comments do not reactivate completed work.
 ## Load only the necessary current context
 
 Resolve the item and repository through the profile's provider and identifiers.
-With `repository.scope: current_checkout`, the open repository is the starting
-repository and default scope, independently of candidate-query scope. One change
+With `repository.scope: current_checkout`, an open Git checkout is the starting
+repository and default scope, independently of candidate-query scope. When started
+outside any Git checkout (for example, in a directory containing repositories),
+use the working directory only as the orchestration and checkout-discovery root.
+Resolve the required repositories from the item and existing job evidence, locate
+their checkouts below that directory, and include the proposed repository set in
+the existing Resolved Intent approval; ask for selection only when ambiguous.
+Do not treat the containing directory as a repository or run repository-specific
+actions there. One change
 may cover an explicit owner-authorized set of repositories. Factory resolves their
 checkouts and dependencies itself; discovering a dependency does not authorize
 editing its repository. Ask only to extend the authorized set, not to locate an
