@@ -175,6 +175,15 @@ Do not silently substitute models or claim that reading YAML switched a model.
 If the launcher cannot honour startup checkout, fresh context, model, reasoning or
 permission requirements, report a blocker rather than simulate a compliant launch.
 
+For single-repository and multi-repository jobs, announce each executor's role
+and repository before dispatch. Expose its human-facing messages incrementally
+through tool continuations and relay them into main-chat commentary without
+paraphrasing or duplication. With Codex `--json`, relay completed `agent_message`
+items; keep raw events and tool output in log files. Read and relay new messages
+while each executor is still running, not only after it exits. Do not relay
+messages already shown as user-facing messages in the main chat. Read the final
+result before continuing; explicitly report execution failures or missing results.
+
 ## Progress commentary
 
 Keep the owner oriented with brief commentary using only progress the orchestrator
@@ -193,8 +202,9 @@ When the current Develop executor is opaque to the orchestrator, do not invent o
 estimate intermediate progress. Keep the last count actually supported by durable
 task evidence, or omit the count if it cannot be established. Do not add heartbeat
 timers, a progress protocol, new executor output requirements, dashboards or extra
-workflow state solely for commentary. Keep updates sparse and omit them when no
-meaningful state changed.
+workflow state solely for commentary. Keep orchestrator-added updates sparse
+and omit them when no meaningful state changed; this does not suppress
+relayed executor messages.
 
 ## Durable evidence and reconstruction
 
