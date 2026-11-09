@@ -250,8 +250,9 @@ Refresh candidates before another recommendation if the owner asks to reconsider
 ## Explore
 
 1. Use the configured requirements skill with item and current project/docs
-   context. Invoke the investigation skill when a material repository/runtime
-   unknown needs deeper exploration. Produce a concise Resolved Intent covering
+   context. Before proposing, use the configured investigation skill to ground
+   the proposal in the affected system's actual behavior and project conventions.
+   Produce a concise Resolved Intent covering
    behavior, material variants, authorized repositories, ownership/dependency
    direction, non-goals, acceptance and remaining ambiguities. Use one Resolved
    Intent and one change, not a separate change because code lives in another repo.

@@ -63,6 +63,9 @@ Before emitting a blocker, ask: **Would a competent implementer be unable to fin
 - `ADDED` / `MODIFIED` / `REMOVED` are correct relative to existing specs.
 
 ### Design
+- Validate material design assumptions against the affected system and project
+  rules, not only consistency between planning artifacts. Keep unsupported
+  assumptions and unresolved contradictions explicit.
 - The design is sufficient to implement the requirements without inventing important decisions during apply.
 - Important failure behavior and verification strategy are defined where needed.
 - Design and specs do not contradict each other.
