@@ -164,19 +164,26 @@ Mention dashboard or alert follow-up when:
 
 ## Testing observability
 
-Do not assert metric calls in ordinary unit tests for business logic.
+Tests should verify behavior, not diagnostics.
 
-Unit tests should verify observable behavior:
+Do not add tests that assert diagnostic logs or metrics: log text, levels, fields, metric labels or values, or the number or order of calls.
 
+Do not add log recorders, metric collectors, interceptors, or other test helpers for these assertions.
+
+Verify operation outcomes directly instead of using logs or metrics as indirect evidence:
+
+- returned values;
 - returned errors;
 - dependency calls;
 - retry/continue/rollback semantics;
 - skipped side effects;
 - persistence or external-boundary behavior.
 
-Test metric calls only when metric selection or aggregation is itself non-trivial logic.
+Adding or changing only diagnostic logs or metrics does not require new tests.
 
-For simple counters, prefer production code clarity over brittle mock expectations.
+Add tests for diagnostic logs or metrics only when the user explicitly requests them. Diagnostic importance or non-trivial metric selection or aggregation does not by itself justify an exception.
+
+Do not remove existing log or metric tests outside the agreed task scope.
 
 ## Final check
 
