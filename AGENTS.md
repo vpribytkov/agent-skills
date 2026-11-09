@@ -7,10 +7,8 @@
 - **Stay Focused on the Intent** — do not expand scope beyond what is required to fulfill and verify the request.
 - **End-to-End Ownership** — drive investigation, implementation, verification, and recovery; involve the user only for real blockers, destructive actions, or product decisions.
   - investigate the relevant available code, tests, docs, config, history, logs, metrics, and tools before asking for discoverable facts; continue safe in-scope work until complete or genuinely blocked.
-- **Simplicity First** — prefer the simplest correct solution; reuse existing behavior, configuration, libraries, framework features, dependencies, and nearby patterns before custom code.
-  - avoid speculative features, abstractions, dependencies, configurability, and error paths.
-- **Eliminate Unnecessary Work First** — before optimizing a costly step, inspect the higher-level decision, workflow, or algorithm that causes it. Prefer avoiding unnecessary work, reducing its frequency or scope, or removing duplication before making each execution cheaper. Apply this to code, processes, and problem solving generally.
-  - preserve the required outcome, behavior, and constraints; verify improvement by the end-to-end result and total cost, not by one step's speed or percentage of resource use.
+- **Simplicity First** — prefer the simplest correct solution; reuse existing behavior, configuration, libraries, framework features, dependencies, and nearby patterns before custom code. Avoid speculative features, abstractions, dependencies, configurability, and error paths.
+- **Eliminate Unnecessary Work First** — before optimizing a costly step, inspect the higher-level decision, workflow, or algorithm that causes it. Prefer avoiding unnecessary work, reducing its frequency or scope, or removing duplication before making each execution cheaper. Apply this to code, processes, and problem solving generally. Preserve the required outcome, behavior, and constraints; verify improvement by the end-to-end result and total cost, not by one step's speed or percentage of resource use.
 - **Surgical Changes** — make the smallest required change; every changed line must trace to the requested behavior; do not refactor or clean up unrelated code.
   - preserve unrelated user changes; do not refactor, reformat, or clean up adjacent code.
 - **Think Before Coding** — understand current behavior, contracts, tests, call sites, data flow, configuration, and nearby patterns before editing; surface material risks/tradeoffs.
