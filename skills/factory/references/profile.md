@@ -21,7 +21,7 @@ Do not auto-select a profile by repo, hostname, environment or command argument.
 | `work_items.operations.record` | Binding to persist receipts and links in `state.provider`; filesystem receipts do not imply work-item comments. |
 | `work_items.transitions` | Provider-specific targets/actions for started, suspended, ready_to_merge and merged. No implied timing. |
 | `repository.context` | Additional current project context paths; missing optional docs are reported/skipped. AGENTS.md always applies independently. |
-| `repository.scope` | `current_checkout` binds execution to the open repository, independently of candidate-query scope. |
+| `repository.scope` | `current_checkout` is the starting/default scope, independently of candidate-query scope; it does not forbid an explicitly owner-authorized multi-repository item. |
 | `repository.worktree` | `never` does not create automatic worktrees; `when_parallel` creates/reuses one when another job occupies this repository's checkout. |
 | `repository.openspec_store` | Registered fallback store ID for projects without local OpenSpec; null means no configured fallback. Actual paths come from the CLI. |
 | `repository.openspec_command` | Machine's OpenSpec executable/path; preserve repository CLI constraints. |
@@ -59,13 +59,17 @@ either `skills` or `commands`, not both. The sync binding may explicitly name th
 inline workflow furnished by the installed archive skill. Do not manufacture a
 missing skill or CLI command from its name.
 
-Identifiers are opaque provider config. `from_git_origin` resolves the current
-repository from its actual Git remote, without assuming a host or path. Bind
+Identifiers are opaque provider config. Resolve Git/PR bindings relative to each
+target repository, not the initial checkout: `from_git_origin` uses that target's
+actual Git remote, without assuming a host or path. Resolve the canonical OpenSpec
+store/change once per item and retain it across repositories; do not reselect it
+from each target's local OpenSpec. The authorized repository set and these resolved
+bindings belong in the existing item receipt, not new profile fields. Bind
 documented command placeholders (`repo`, `item`, `item_number`, `slug`, `change`,
 `pr`, `head`) from resolved current evidence. `{item}` means the canonical provider
 key (e.g. a Jira issue key), not arbitrary invocation text. For
 `repository.openspec_change_template`, `{item_lower}` is that key lowercased,
-`{repository}` is the current repository name, `{service}` is the repository/service
+`{repository}` is the starting repository name, `{service}` is the repository/service
 identity established by current project context (falling back to repository name),
 and `{slug}` is a short lowercase ASCII kebab-case description of the approved
 intent. Treat the template as simple placeholder substitution only; do not evaluate
