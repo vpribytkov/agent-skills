@@ -29,7 +29,7 @@ Do not auto-select a profile by repo, hostname, environment or command argument.
 | `repository.branch_template` | Project branch convention; current repository instructions take precedence. |
 | `prioritization_prompt` | Exact ranking policy; use a YAML literal block scalar rather than a folded scalar. |
 | `blocks.<name>.enabled` | Enables a known block; only Review can be omitted in v0. |
-| `blocks.<name>.model`, `reasoning` | Main-chat settings for Explore/Owner Review; dispatched executor settings for Develop/Review. |
+| `blocks.<name>.model`, `reasoning` | Main-chat settings for Explore/Owner Review; native subagent settings for Develop/Review. |
 | `blocks.<name>.skills` | Installed skill bindings for the roles used by that block. |
 | `blocks.<name>.commands` | Alternative command/tool bindings for those same roles. |
 | `blocks.develop.escalation` | Optional model, reasoning and technical escalation criterion. |

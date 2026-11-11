@@ -25,21 +25,19 @@ The goal is maximum defect recall before repair, not agreement between reviewers
 
 ## Required delegation
 
-The review executor must be able to launch independent sessions in each target
-checkout. Run A/B/C for every repository: two repositories require six passes.
+The review executor must have native subagent delegation available.
+Run A/B/C for every repository: two repositories require six passes.
 Sequential execution is allowed and must respect the caller's concurrency limits;
 never drop a perspective to fit those limits.
 
-Each pass starts a fresh session with its repository checkout as working directory
-from startup, loading that checkout's AGENTS.md, not another repository's rules or
-conversation. For Codex, inspect installed `codex exec --help` and use
-`codex exec --cd <checkout>` or a supported equivalent, preserving the model/reasoning
-below and configured read-only permissions. A path in a `spawn_agent` prompt or a
-later shell `cd` does not provide this guarantee. Do not pass findings between
-independent reviewers, including reviewers of different repositories.
+Start each pass as a fresh native subagent with `fork_turns="none"`, preserving
+the model/reasoning below. Reviewers load the target checkout's applicable project
+instructions and use explicit workdir paths. Keep every pass read-only. Do not
+pass the parent conversation or findings between independent reviewers, including
+reviewers of different repositories.
 
-If the launcher cannot meet startup checkout, fresh context, model/reasoning or
-permission requirements, report a blocker rather than simulate independent review.
+If required independent delegation, model/reasoning or permission requirements
+cannot be met, report a blocker rather than degrade the review.
 
 ### A. OpenSpec verification
 

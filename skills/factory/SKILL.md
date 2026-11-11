@@ -156,33 +156,29 @@ or spec loops through a subagent. Main-chat model/reasoning settings apply to
 that chat; use host controls when available and report an unavailable setting
 rather than moving Explore elsewhere.
 
-Dispatch repository-specific Develop and Review in new sessions whose working
-directory is the target checkout from startup. For Codex, inspect the installed
-`codex exec --help` and use `codex exec --cd <checkout>` (or an actually supported
-equivalent), with the configured model, reasoning and permissions. A `spawn_agent`
-prompt containing a path, or a later shell `cd`, is not an equivalent guarantee.
-Do not resume/fork another repository's executor conversation or inherit its
-project instructions. Reconstruct context from durable sources: the item, accepted
-shared specification and store/change, assigned task IDs, exact candidate links,
-current evidence and versions of dependent contracts. Load project instructions
-from the target checkout, not from the dispatcher's repository. Return any material
-owner decision to the main chat and wait before continuing dependent work.
+Dispatch Develop and enabled skill-based Review as native subagents with
+`fork_turns="none"`, using their configured model/reasoning and explicit
+repository/task scope. Reconstruct context from durable sources: the item,
+accepted shared change/store, assigned task IDs, exact candidate links, current
+evidence and dependent contract versions. Subagents load applicable instructions
+from their target checkout and use explicit workdir paths; repository-specific
+instructions apply only to that checkout. Return material owner decisions to the
+main chat and wait before continuing dependent work.
+Retain the Develop agent handle and reuse it while available for continuation
+and repair within the assigned scope; a workflow transition alone does not
+require a new developer.
 
-Use at most one executor at a time per job. Review cannot be implementation
-self-review; Develop uses no per-task subagents or replacement apply framework. On its
+Use at most one Develop or top-level Review executor at a time per job; child
+review passes follow their skill's concurrency rules and runtime limits.
+Review cannot be implementation self-review; Develop uses no per-task subagents
+or replacement apply framework. On its
 configured escalation condition, hand the remaining scoped work to the escalation model.
 Do not silently substitute models or claim that reading YAML switched a model.
-If the launcher cannot honour startup checkout, fresh context, model, reasoning or
-permission requirements, report a blocker rather than simulate a compliant launch.
+If native delegation cannot honour required fresh contexts, model/reasoning or
+permissions, report a blocker rather than simulate compliance.
 
-For single-repository and multi-repository jobs, announce each executor's role
-and repository before dispatch. Expose its human-facing messages incrementally
-through tool continuations and relay them into main-chat commentary without
-paraphrasing or duplication. With Codex `--json`, relay completed `agent_message`
-items; keep raw events and tool output in log files. Read and relay new messages
-while each executor is still running, not only after it exits. Do not relay
-messages already shown as user-facing messages in the main chat. Read the final
-result before continuing; explicitly report execution failures or missing results.
+Announce each subagent's role and repository scope. Read its returned result
+before continuing; explicitly report failures or missing results.
 
 ## Progress commentary
 
@@ -202,9 +198,8 @@ When the current Develop executor is opaque to the orchestrator, do not invent o
 estimate intermediate progress. Keep the last count actually supported by durable
 task evidence, or omit the count if it cannot be established. Do not add heartbeat
 timers, a progress protocol, new executor output requirements, dashboards or extra
-workflow state solely for commentary. Keep orchestrator-added updates sparse
-and omit them when no meaningful state changed; this does not suppress
-relayed executor messages.
+workflow state solely for commentary. Keep updates sparse and omit them when no
+meaningful state changed.
 
 ## Durable evidence and reconstruction
 
@@ -332,8 +327,8 @@ preparation solely for workflow convenience; those are candidate gates, not
 commit gates. Respect explicit owner and repository restrictions.
 With `skill_then_external` and no PR yet, hand the qualified local candidate to
 independent Review before invoking PR preparation. After local PASS, prepare the PR
-through the configured PR skill/commands. A commit that only records the reviewed
-contents does not invalidate that local PASS; changed contents do.
+in the main chat through the configured PR skill/commands. A commit that only records
+the reviewed contents does not invalidate that local PASS; changed contents do.
 Once the PR exists, repairs use the external review phase, not another local
 review gate. Keep the initial local result as historical evidence, without
 claiming it reviewed later repairs.
@@ -377,9 +372,10 @@ report the actual blocker. A successful unrelated CI/build is not review accepta
 ## Review
 
 Review remains one Factory block covering all required repository candidates.
-Check each part in a fresh session starting in its own checkout. Also check
-inter-repository contracts against exact heads (for example `head-backend` +
-`head-frontend`) and record the compatibility evidence; local PASS results alone
+Check each part through independent native review with fresh contexts and
+applicable checkout instructions. Also check inter-repository contracts against
+exact heads (for example `head-backend` + `head-frontend`) and record the
+compatibility evidence; local PASS results alone
 are insufficient. Contract changes invalidate affected dependent verification,
 review and compatibility results, not automatically every check. CHANGES returns
 only necessary work to Develop under the existing contract-based repair loop.
