@@ -68,9 +68,21 @@ Task:
 
 - Resolve and use the installed `code-review-skill`.
 - Review the whole repository candidate against the exact base/head, its repository instructions, work item, shared accepted intent/change/store, known dependencies and applicable verification evidence.
+- Audit the necessity of each meaningful behavior change: identify the agreed
+  obligation that would fail without it, or the candidate-introduced regression
+  it prevents. A broad requirement label or "more robust" is not sufficient;
+  respect explicit exclusions and behavior the owner asked to preserve.
+- Check the exact base before recommending a fix. Distinguish candidate defects
+  from unrelated pre-existing problems and optional improvements. An old defect
+  belongs in the repair scope only with evidence that it blocks an agreed obligation.
+- Report unnecessary candidate changes as findings requesting removal or restoration
+  of base behavior, not further improvements. Implementation details need not be
+  prescribed by the spec, but their necessity must be explainable without adding
+  requirements to justify the candidate.
 - Preserve the review skill's normal integration/system tracing behavior.
 - Do not mutate anything.
-- Return material findings, verdict, and explicit unresolved limitations.
+- Return material candidate findings, separate baseline/improvement observations,
+  verdict, and explicit unresolved limitations.
 
 This is the primary system/code review pass.
 
@@ -110,14 +122,25 @@ The parent review executor owns aggregation:
    candidate are stale, not completed coverage.
 2. Deduplicate by underlying failure path within repositories and across their
    boundaries, not wording; preserve the originating repository/pass for each source.
-3. Validate proposed material findings against production code and task intent before returning them, especially findings from the raw reviewer.
+3. Validate proposed material findings against production code, the exact base and
+   agreed task intent before returning them, especially findings from the raw reviewer.
+   Confirm both the defect and why its repair belongs in this change. A problem's
+   existence or priority alone does not authorize expanding the task. Do not justify
+   an extra behavior change by requirements added to explain the implementation.
 4. Do not discard a finding merely because the other reviewers did not report it.
 5. Distinguish:
-   - confirmed material finding;
+   - confirmed material candidate finding, including unnecessary changes whose
+     removal restores the agreed scope;
+   - unrelated pre-existing problem or optional improvement: report only as a
+     non-blocking observation, not a candidate finding or required repair;
    - non-blocking spec/test-quality note;
    - unsupported/false-positive concern;
    - explicit verification limitation.
-6. Apply the caller's configured priority/materiality threshold only after exploration and validation, not while deciding which child findings to inspect.
+6. Apply the caller's configured priority/materiality threshold to validated
+   candidate findings only, after exploration and validation, not while deciding
+   which child findings to inspect. Baseline/improvement observations do not block
+   PASS or become repair tasks, regardless of priority; rejecting an unnecessary
+   candidate change remains an in-scope finding.
 7. Validate inter-repository compatibility against the exact participating heads
    (for example `head-backend` + `head-frontend`), using shared contracts and actual
    producer/consumer evidence. Record what was traced or exercised and any gaps;
