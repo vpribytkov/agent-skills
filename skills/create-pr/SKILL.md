@@ -1,28 +1,32 @@
 ---
 name: create-pr
-description: "Prepare local changes and create a pull request by checking scope and branch, committing narrowly, pushing, and opening a draft PR. Use when the user asks to create, open, publish, or prepare a PR from the current repository."
+description: "Use when asked to create or update a PR, or write its title and description. Prepare the current changes and publish a draft only when publication is requested."
 ---
 
 # Create PR
 
-1. Read project instructions and any conditional Git or PR guidance. Project branch names, base branch, PR template, and acceptance rules override this skill.
-2. Inspect `git status --short`, the full diff, untracked files, current branch, upstream, and remote default branch. Exclude unrelated user changes.
-3. Never publish from the default branch. If the correct working branch is materially ambiguous, ask; otherwise create or switch to the branch required by the project.
-4. Do not run verification solely to create a PR. Reuse existing results when available; otherwise report missing verification without triggering additional checks. Never claim an unverified result.
-5. Stage only files in scope. Create a narrow commit with a clear imperative subject; do not rewrite suitable existing commits unless asked.
-6. Push the current branch with upstream tracking. Never force-push without explicit approval.
-7. Open a draft PR unless the user explicitly requests ready-for-review.
-   Base the PR title on the associated task when one is established by the current context. Preserve its exact title and include its identifier, if available, without translating or rewriting it. Otherwise, use a concise descriptive title.
-   Use the project template when required; otherwise write the description in Russian with these sections:
-   - `## Что изменено` — briefly describe what was added, removed, fixed, or changed, focusing on observable behavior.
-   - `## Зачем это нужно` — explain the problem being solved and why the change matters.
-   - `## Как реализовано` — briefly explain non-obvious implementation decisions relevant to the reviewer.
-   Include `## Связанные изменения` only when dependent PRs exist.
-   Describe the actual change relative to existing behavior; do not present existing capabilities as newly added. Make the supported outcome and any material scope boundary clear without implying broader automation.
-   Make the causal link explicit: explain how the change addresses the problem to achieve the task's goal, rather than restating what changed. For fixes, explain why the old behavior failed, not just its consequences; label unconfirmed causes as hypotheses.
-   Explain non-obvious implementation decisions through their reviewer-relevant purpose or consequence, rather than listing mechanisms. For complex behavioral changes, use a short concrete example when it clarifies the outcome; do not force examples into trivial PRs.
-   Keep the description concise and reviewer-oriented. Omit redundant implementation details, generic filler, development history, test results, logs, commit hashes, and verification evidence.
-   Mention risks, limitations, or intentional contract changes only when they materially affect the reviewer’s understanding.
-8. Report the PR URL and any material blockers or remaining risks. Never merge or deploy without separate explicit approval.
+Writing a title or description alone does not authorize commits, pushes or PR changes.
+Follow project instructions, branch/base rules and required PR templates.
 
-For GitHub, prefer the available GitHub connector and use `gh` only when the connector cannot perform or inspect the required operation.
+## Prepare and publish
+
+1. Inspect status, staged and unstaged task diffs, untracked files, current branch/upstream and remote default/base branch. Preserve unrelated user changes; stage only the requested scope.
+2. Never publish from the default branch. Choose the working branch/base from project rules and context, creating or switching to the task branch when needed. Ask only if material ambiguity remains; do not switch across unresolved user changes.
+3. Do not run tests, builds or runtime checks solely to create a PR. Reuse existing verification results with their actual scope and report missing evidence honestly.
+4. When publication is authorized, create a narrow commit if needed and push the current branch with upstream tracking. Preserve suitable existing commits; never force-push without explicit approval.
+5. Open a draft unless the user requests ready-for-review. For an existing PR, update the requested fields without changing its readiness implicitly.
+
+## Title and body
+
+Use the associated task's exact title and identifier when established; do not translate or rewrite it. Otherwise use a concise descriptive title.
+Unless a required project template says otherwise, write the body in Russian:
+
+- `## Что изменено` — observable changes relative to the previous behavior.
+- `## Зачем это нужно` — the problem and how this change achieves the requested outcome. For a fix, explain the cause; label an unconfirmed cause as a hypothesis.
+- `## Как реализовано` — non-obvious decisions and their reviewer-relevant purpose or consequence.
+- `## Связанные изменения` — only when dependent PRs exist.
+
+Keep the body concise. Include material scope limits, risks or changed contracts; omit routine implementation detail, development history, logs, hashes and test evidence. A short example is useful only when it clarifies a complex behavior change.
+When publishing, put available verification evidence in a separate PR comment with commands/results and material gaps. Do not place it in the body or rerun checks to fill the comment.
+
+For GitHub, prefer the GitHub connector; use `gh` when it cannot perform the required operation. Return the PR URL and material blockers or remaining risks. Never merge or deploy as part of this skill.

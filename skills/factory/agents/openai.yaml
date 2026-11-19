@@ -1,4 +1,4 @@
 interface:
   display_name: "Software Factory"
-  short_description: "OpenSpec orchestration with one local YAML profile"
+  short_description: "Small changes, focused proof, one independent review"
   default_prompt: "Use $factory to start, resume, prioritize or inspect one work item."

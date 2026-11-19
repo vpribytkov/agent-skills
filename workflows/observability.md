@@ -1,197 +1,35 @@
-# Observability workflow
+# Runtime diagnostics
 
-Use this workflow for production behavior changes, async jobs, integrations, validation/rejection flows, data imports/exports, retries, error-path changes, and any code path whose runtime behavior must be understood after deployment.
+Use when a change needs rollout visibility or runtime diagnosis. Start with a
+concrete question operators need to answer, then inspect existing metrics, logs,
+and traces. Add instrumentation only for a material unanswered question.
 
-Observability is part of implementation readiness, not an optional follow-up.
+## Choose the signal
 
-## Observability decision
+- For a changed business flow, identify which outcomes matter: attempts, success, failure, or relevant skips, retries, deduplication, and rollback. Existing signals may already cover them.
+- For performance or dependencies, use duration, latency, throughput, lag, or failure signals that address the actual risk. Error-only data cannot establish successful rollout volume.
+- Reuse existing clients, helpers, metric families, names, and label conventions. Do not add a metric that can be reliably derived from existing ones.
+- Use counters for events, histograms/timers for duration, and gauges for current state that rises and falls.
 
-Before finishing a runtime behavior change, decide whether the change needs:
-- business metrics;
-- technical metrics;
-- structured logs;
-- tracing/span attributes;
-- dashboard or alert follow-up.
+## Ownership and dimensions
 
-Do not add observability blindly. Add it when it answers a concrete production question.
+Measure an event where it occurs: `service` for business outcomes, `storage` for
+DB operations, `client` for external calls, and `cron`/runtime for job lifecycle.
+Avoid duplicating a dependency's metric in its caller.
 
-If observability is not added, state why in the final response.
+Follow repository naming. Where the dotted convention is used, preserve
+`<layer>.<component>.<operation>.<result>`, for example
+`service.padme_sync.rows.success` or
+`storage.personal_data.acquire_padme_sync_batch.error`.
 
-Observability is sufficient only when it answers the concrete rollout/debug questions introduced by the change.
+Keep metric labels bounded, such as operation, result, reason, or task type.
+Do not use raw IDs or error strings as metric labels. Use established, non-sensitive
+correlation fields for logs and traces; never include secrets or raw personal data.
 
-Before marking observability as sufficient, explicitly answer:
+## Keep diagnostics useful
 
-- How can operators tell that the new behavior is active?
-- How many relevant attempts happened?
-- How many succeeded?
-- How many failed?
-- How many were skipped, rejected, retried, deduplicated, or rolled back when applicable?
-- Which bounded dimensions matter for debugging or rollout safety?
-- Which existing or new metrics/logs/traces answer these questions?
-
-Error-only observability is not sufficient by default for production-impacting behavior unless successful activity or rollout volume is observable elsewhere and cited.
-
-If these questions cannot be answered by existing or newly added observability, the change is not production-ready.
-
-## Business metrics
-
-Business metrics describe what happened in the domain operation.
-
-Add or update business metrics when the change affects:
-
-- a business operation;
-- validation or rejection flow;
-- task/job lifecycle;
-- data import/export;
-- entity creation/update/delete;
-- replication, cloning, migration, sync, or generation flow;
-- user-visible or product-visible outcome.
-
-Business metrics should answer:
-
-- How many operations were attempted?
-- How many succeeded?
-- How many failed?
-- How many were skipped, rejected, retried, rolled back, or deduplicated?
-- Why was work skipped or rejected?
-- Which business branch/path was used?
-- Is the new behavior replacing the old behavior as expected?
-
-Prefer counters with bounded labels such as:
-
-- operation;
-- result;
-- reason;
-- task_type;
-- source;
-- status.
-
-Avoid high-cardinality labels such as raw IDs, user IDs, VINs, emails, request IDs, or unbounded error strings.
-
-## Technical metrics
-
-Technical metrics describe how the system performed.
-
-Add or update technical metrics when the change affects:
-
-- external dependency calls;
-- repository/database calls;
-- queues, consumers, workers, crons, or async jobs;
-- retries, timeouts, fallbacks, or circuit-breaker-like behavior;
-- latency-sensitive code;
-- batch size, lag, throughput, or processing duration.
-
-Technical metrics should answer:
-
-- How long did the operation take?
-- Which dependency failed?
-- How often did retries happen?
-- How often did fallback behavior happen?
-- How many items were processed per batch?
-- Is latency, throughput, lag, or error rate changing?
-
-Use:
-
-- counters for attempts, successes, failures, retries, skips, fallbacks;
-- histograms/timers for duration and latency;
-- gauges only for current state values that go up and down.
-
-Avoid derived or redundant metrics. If a value can be reliably derived from existing metrics, prefer not to add a separate metric.
-
-For example, if both `service.padme_sync.rows.success` and `service.padme_sync.rows.failed` exist, then a separate batch-size metric is usually unnecessary because processed batch size is `rows.success + rows.failed`.
-
-Add a separate metric only when it answers a different production question or avoids an expensive calculation/query.
-
-## Existing pattern first
-
-Before adding metrics/logs/traces:
-
-1. Inspect nearby code for existing observability patterns.
-2. Reuse existing metric clients, names, labels, and helpers.
-3. Prefer extending an existing metric family when it matches the same domain concept.
-4. Do not invent a new naming or label style unless the existing pattern is clearly unsuitable.
-
-## Metric ownership and naming
-
-Before adding a metric, decide which layer owns the measured event:
-
-- `service` — business outcome of a service-level flow;
-- `storage` — database/repository operation result;
-- `client` — external dependency call result;
-- `cron`/runtime — job execution lifecycle, duration, and run status.
-
-Place the metric at the layer where the measured operation actually happens. Do not expose storage or client operation metrics from a service just because the service calls that dependency.
-
-Use this naming pattern: `<layer>.<component>.<operation>.<result>`.
-
-Examples:
-
-- `service.padme_sync.rows.success`
-- `service.padme_sync.rows.failed`
-- `storage.personal_data.acquire_padme_sync_batch.success`
-- `storage.personal_data.acquire_padme_sync_batch.error`
-- `storage.personal_data.mark_padme_synced.success`
-- `storage.personal_data.mark_padme_synced.error`
-
-A service-level metric should describe the business/process outcome. A storage-level metric should describe the DB operation outcome. A client-level metric should describe the external call outcome.
-
-Avoid metrics that only duplicate another layer's responsibility.
-
-## Logs and traces
-
-Use structured logs for specific diagnostic events:
-
-- unexpected state;
-- rejected/skipped work;
-- external dependency failure;
-- retry exhaustion;
-- fallback selection;
-- irreversible or hard-to-reconstruct decisions.
-
-Use traces/span attributes for request flow, async processing, cross-service calls, or latency-sensitive paths.
-
-Do not log or tag secrets, credentials, tokens, personal data, raw sensitive values, or high-cardinality identifiers.
-
-## Dashboard and alert follow-up
-
-Do not create dashboards or alerts by default.
-
-Mention dashboard or alert follow-up when:
-
-- a new critical metric is introduced;
-- the change affects SLO/NFR, latency, availability, error rate, throughput, lag, or data freshness;
-- operators need rollout visibility.
-
-## Testing observability
-
-Tests should verify behavior, not diagnostics.
-
-Do not add tests that assert diagnostic logs or metrics: log text, levels, fields, metric labels or values, or the number or order of calls.
-
-Do not add log recorders, metric collectors, interceptors, or other test helpers for these assertions.
-
-Verify operation outcomes directly instead of using logs or metrics as indirect evidence:
-
-- returned values;
-- returned errors;
-- dependency calls;
-- retry/continue/rollback semantics;
-- skipped side effects;
-- persistence or external-boundary behavior.
-
-Adding or changing only diagnostic logs or metrics does not require new tests.
-
-Add tests for diagnostic logs or metrics only when the user explicitly requests them. Diagnostic importance or non-trivial metric selection or aggregation does not by itself justify an exception.
-
-Do not remove existing log or metric tests outside the agreed task scope.
-
-## Final check
-
-Before finishing, verify:
-
-- business metrics were considered;
-- technical metrics were considered;
-- added labels are low-cardinality and non-sensitive;
-- existing observability patterns were followed;
-- logs/traces are not noisy or sensitive;
-- final response says what observability was added or why none was added.
+- Use structured logs for actionable events and traces for flow or latency questions. Avoid noisy repetition, especially in retries and batch loops.
+- Add or recommend dashboards and alerts only when needed for a concrete operational question or requirement.
+- Verify returned results, errors, persistence, retry/rollback behavior, and side effects directly. Do not add diagnostic log/metric assertions, recorders, or collectors unless the user requests them.
+- Diagnostic-only changes do not need new tests. Preserve existing diagnostic tests outside the task scope.
+- Report material diagnostic gaps that limit rollout or investigation. There is no requirement to add instrumentation or explain its absence for every runtime change.

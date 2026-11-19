@@ -1,107 +1,32 @@
 ---
 name: openspec-review-change
-description: Review an OpenSpec change before apply. Find material problems in intent, requirements, design, and task decomposition. Do not implement or edit unless explicitly asked.
+description: "Use when explicitly asked to review an OpenSpec plan before implementation, or resolve a concrete concern about its scope, design or acceptance. Not a mandatory planning gate."
 ---
 
 # OpenSpec Review Change
 
-Review the requested OpenSpec change before implementation.
-
-Before reviewing the change, read the source issue / approved Resolved Intent when available.
-Treat it as the primary scope boundary.
-
-Flag planning machinery that materially exceeds the requested outcome even if proposal/spec/design are internally consistent with each other.
-
-Read, in order:
-
-1. `proposal.md`
-2. `specs/**/spec.md`
-3. `design.md`, if present
-4. `tasks.md`
-5. Existing base specs only when needed to validate `ADDED` / `MODIFIED` / `REMOVED`.
+Review the requested change without editing artifacts or starting apply unless asked.
+Read the source request and approved decisions/Resolved Intent first: they bound scope even when planning artifacts agree with each other. Then read the change's available proposal, delta specs, design and tasks using its native OpenSpec workflow/schema. Inspect base specs and affected code when needed to validate changes or material design assumptions.
 
 ## Review
 
-Check only for issues that could cause wrong implementation, scope creep, weak acceptance, blocked execution, or wasted apply work.
+- Check for wrong behavior, hidden scope, contradictory requirements, missing consequential decisions, blocked execution or weak acceptance. Do not invent requirements to justify existing planning machinery.
+- Requirements must describe observable behavior, with meaningful scenarios and correct `ADDED` / `MODIFIED` / `REMOVED` semantics relative to base specs. Check material variants and failure behavior where relevant.
+- Validate material design assumptions against the affected system and project rules, not just other artifacts. Keep unsupported assumptions explicit.
+- Challenge compatibility, migration, recovery, versioning or durable-state machinery that lacks an accepted requirement. When its cost rivals the feature, raise the simpler operational alternative for an owner decision; preserve explicit compatibility and safety obligations.
+- Tasks should deliver coherent, verifiable behavior with known dependencies and enough context to execute or resume. Split tooling development from production acceptance when combining them prevents independent verification; do not mandate a preferred decomposition without a concrete consequence.
+- Prove behavior at the cheapest authoritative layer. Avoid duplicate variant matrices unless each layer can independently break the contract. Require real runtime proof only for runtime/external-service semantics, early enough to resolve major implementation risk.
 
-### Severity calibration
+## Severity
 
-Use `BLOCKER` only when the artifacts must change before a reasonable implementer can safely and correctly complete or verify the requested change. A blocker needs a concrete failure path and at least one of these consequences:
+Use `BLOCKER` only for a concrete failure that requires changing the artifacts before a competent implementer can safely complete and verify the intended outcome. Examples include a broken primary path, conflicting accepted decisions, missing material product/architecture choices, data loss, identity corruption, duplicate mutation or false acceptance.
+Convenience recovery, wording, preferred task order, extra tests and implementation choices within existing invariants are not blockers. A rare failure with a contained, conservative outcome is not a blocker merely because it is possible; destructive or core-safety violations still can be.
+Use `WARNING` only for a realistic, material apply risk. Omit speculative issues and unrelated improvements; prefer `READY` when the evidence supports it.
 
-- the primary supported or acceptance path cannot work;
-- requirements/design materially contradict each other or an accepted decision;
-- an important product or architecture decision is missing and cannot be inferred safely;
-- the specified behavior can credibly cause duplicate mutation, identity corruption, data loss, unsafe ownership, or a false acceptance verdict.
+## Return
 
-Do not classify an issue as `BLOCKER` merely because it describes:
+1. Verdict: `READY`, `READY WITH CHANGES` or `NOT READY`, with a short reason.
+2. Material findings in impact order: stable `B1`/`W1` identifiers, artifact/section, concrete failure and minimal correction. Preserve identifiers across review rounds.
+3. Owner decisions only when product/scope judgment is genuinely required; state material evidence gaps.
 
-- a narrow timing window or rare crash with a conservative fail-closed/blocked outcome;
-- missing convenience recovery or operator ergonomics;
-- a preferred task order, extra test, audit hardening, or clearer wording;
-- an implementation detail that can be resolved within the stated requirements and invariants.
-
-An edge case may still be a blocker when its consequence is destructive or violates a core safety invariant and the design does not contain it. Otherwise omit it or use `WARNING` only when the risk is material to realistic apply work.
-
-Before emitting a blocker, ask: **Would a competent implementer be unable to finish safely and verify the intended outcome without changing the planning artifacts?** If the answer is no, it is not a blocker. Prefer `READY` over defensive hypothetical findings.
-
-### Intent and scope
-- The change has one clear intent.
-- Scope matches the requested outcome and does not contain unrelated work.
-- Important boundaries or out-of-scope behavior are explicit where ambiguity would matter.
-
-### Complexity and migration gate
-
-- Challenge compatibility, migration, recovery, versioning, reconciliation, or durable-state machinery that is not explicitly required by the source intent.
-- If such machinery is comparable in complexity to the feature itself, surface it as a material finding and ask whether a simpler operational boundary is acceptable (for example clean reset or one-time manual migration).
-- Prefer one current contract over coexistence of old and new contracts unless backward compatibility is an explicit requirement.
-- Do not require automatic recovery for states that the owner is willing to resolve operationally.
-
-### Requirements
-- Each requirement defines one observable behavior with `MUST` / `SHALL`.
-- Requirements describe behavior, not implementation.
-- Scenarios actually exercise the requirement and cover important edge, error, retry, duplicate, or failure cases where relevant.
-- `ADDED` / `MODIFIED` / `REMOVED` are correct relative to existing specs.
-
-### Design
-- Validate material design assumptions against the affected system and project
-  rules, not only consistency between planning artifacts. Keep unsupported
-  assumptions and unresolved contradictions explicit.
-- The design is sufficient to implement the requirements without inventing important decisions during apply.
-- Important failure behavior and verification strategy are defined where needed.
-- Design and specs do not contradict each other.
-
-### Tasks
-- Tasks are traceable to the approved requirements/design and contain no hidden scope.
-- Each task block is a coherent work unit with explicit dependencies and preconditions.
-- Each block has a clear verification boundary and enough context to execute or resume from repository and OpenSpec state without rediscovering the design.
-- Split verification-tooling development from production acceptance when combining them would make the block non-independent or hard to verify.
-
-### Verification economy
-
-- Each behavior should be proven at the cheapest authoritative layer.
-- Do not duplicate the same variant matrix through multiple layers unless each layer can independently corrupt that behavior.
-- Use focused unit/integration tests for deterministic application logic, configuration and protocol behavior; require production-equivalent runtime proof for behavior that depends on real runtime or external-service semantics.
-- Move the highest-risk production proof early enough that failure would not invalidate a large amount of later implementation.
-
-## Output
-
-Return:
-
-1. **Verdict:** `READY` / `READY WITH CHANGES` / `NOT READY`
-2. **Material findings**, highest impact first
-3. **Owner review** — only product/scope decisions that require the project owner's judgment
-
-For findings:
-- use stable identifiers `B1`, `B2`, ... for blockers and `W1`, `W2`, ... for warnings;
-- format each as:
-  `[artifact/section] problem → minimal required correction`;
-- preserve identifiers in follow-up review rounds.
-
-Do not:
-- nitpick wording or formatting;
-- propose unrelated improvements;
-- rewrite the artifacts;
-- implement anything;
-- report speculative issues without a concrete failure mode.
-
-If there are no material findings, return `READY` with a short reason.
+If no material findings remain, return `READY` with a short reason. Do not launch a summary, implementation or another review automatically.

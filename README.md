@@ -1,104 +1,55 @@
 # agent-skills
 
-Personal collection of reusable agent skills and global instructions, kept in Git so the same setup can be used across multiple computers and coding-agent harnesses.
+Personal agent skills and global instructions, shared through Git across computers and coding-agent harnesses.
 
-## Layout
+## Minimal setup for GPT-6.2
 
-```text
-agent-skills/
-├── AGENTS.md
-├── workflows/
-│   ├── planning.md
-│   ├── investigation-rca.md
-│   ├── integration-tests.md
-│   └── observability.md
-├── skills/
-│   ├── coding-quality/
-│   ├── create-pr/
-│   ├── factory/
-│   ├── openspec-*/
-│   └── ...
-├── install.ps1
-└── install.sh
-```
+Select the intended GPT-6.2 model in the harness. These files inherit that runtime choice; neither YAML nor a skill prompt switches the main model. There are no mandatory per-stage models or reasoning levels.
 
-The installer always links all three parts — `skills/`, `workflows/`, and `AGENTS.md` — into the selected harness configuration directory.
+The default is a small set of global rules and only the skill needed for the current request. Factory keeps one OpenSpec change, one owner for the connected implementation, focused behavioral checks and one independent review before owner acceptance. Existing project requirements and required CI checks still apply.
 
-Supported harnesses:
+Removed from the routine path: duplicate plans, mandatory interview/spec-polish chains, three-pass ensemble review, a second local/external review by default, and repeated full checks after every small repair. Supporting skills remain available on explicit request; no skill was deleted.
 
-| Agent | Global directory |
+### Optional skills retained for the trial
+
+| Skill | When it still helps |
 | --- | --- |
-| Codex | `~/.codex` |
-| Pi | `~/.pi/agent` |
-| OpenCode | `~/.config/opencode` |
+| `coding-quality` | A requested design/complexity review; ordinary implementation follows the short global rules. |
+| `ensemble-code-review` | An explicitly requested comparison of three independent review perspectives. |
+| `openspec-review-change` | A spec with material uncertainty that merits separate review. |
+| `openspec-summarize-change` | A requested explanation of a change for its owner. |
+| `openspec-retrospective` (`openspec-retro-change/`) | Analyzing time, rework, verification cost and review value from an actual delivery. |
+| `to-changes` | Splitting broad requirements into useful deliverable changes. |
+| `verify-feature` | A focused check of whether implemented behavior satisfies requirements. |
 
-These locations match the harnesses' global instruction directories. Codex skills use `~/.codex/skills`; Pi and OpenCode also support their native global skill directories used here.
+The first four are candidates to stop using routinely while trying this setup. The installer still links their files; the global routing and Factory no longer require them. Judge the setup on the next real task: time to a reviewable PR, unnecessary changes and defects found after acceptance. Replaying a task through several setups is not a prerequisite.
+
+This direction follows the official [GPT-6.2 prompting guide](https://learn.chatgpt.com/guides/prompting-gpt-6-2-astra) and [guidance on simplifying skills](https://learn.chatgpt.com/blog/rethinking-skills-and-prompts-for-gpt-6-astra). Reduced instruction volume is measurable; faster or more reliable development still needs evidence from real work.
 
 ## Install
 
-Clone this repository into a stable location, then select the harness.
+Clone into a stable directory. The installer links `AGENTS.md`, `skills/` and `workflows/` into the selected harness configuration directory.
 
-### Windows
+| Harness | Global directory | Windows | macOS / Linux |
+| --- | --- | --- | --- |
+| Codex | `~/.codex` | `.\install.ps1 -Agent codex` | `sh ./install.sh codex` |
+| Pi | `~/.pi/agent` | `.\install.ps1 -Agent pi` | `sh ./install.sh pi` |
+| OpenCode | `~/.config/opencode` | `.\install.ps1 -Agent opencode` | `sh ./install.sh opencode` |
 
-```powershell
-.\install.ps1 -Agent codex
-.\install.ps1 -Agent pi
-.\install.ps1 -Agent opencode
-```
+Windows uses directory junctions and a file symlink for `AGENTS.md`; the latter can require Developer Mode or appropriate privileges. macOS/Linux uses symlinks. Do not install from a disposable worktree.
 
-Directory targets are installed as junctions. `AGENTS.md` is installed as a file symlink, which can require Developer Mode or appropriate privileges.
+Existing targets are preserved. The installer reports `[link]`, `[skip]` or `[error]` for each target and continues with the others. When `skills/` already exists, missing skills are linked individually; existing skills/files/links remain intact. For Codex, missing skill links are also added to `~/.agents/skills` when that directory already exists.
 
-### macOS / Linux
-
-```bash
-sh ./install.sh codex
-sh ./install.sh pi
-sh ./install.sh opencode
-```
-
-All targets are symlinks.
-
-The resulting layout for the selected harness is:
-
-```text
-<agent-root>/
-├── AGENTS.md   -> <repo>/AGENTS.md
-├── skills/     -> <repo>/skills/
-└── workflows/  -> <repo>/workflows/
-```
-
-The installer never replaces an existing target. Missing targets are linked and reported as `[link]`, occupied paths are reported as `[skip]`, and link failures are reported as `[error]`. One occupied target does not prevent the installer from linking the others.
-
-If the selected harness already has a `skills/` directory, the installer adds an individual link for each missing skill instead of skipping the whole directory. Existing skills, files, and links are preserved. This also works when `skills/` is a directory link to a shared location.
-
-For Codex, the installer also adds missing skill links to `~/.agents/skills` if that directory already exists. This keeps installations made by earlier versions of these scripts up to date.
-
-Do not install from a temporary worktree that will be deleted. Use a stable checkout.
-
-## Adding a skill
-
-Add a new directory under `skills/` and commit it:
-
-```text
-skills/
-└── my-skill/
-    └── SKILL.md
-```
-
-When the whole `skills/` directory is linked, newly added skills appear after `git pull` automatically. When skills are linked individually into an existing directory, rerun the installer after `git pull` to add links for new skills:
-
-```powershell
-.\install.ps1 -Agent codex
-```
-
-```bash
-sh ./install.sh codex
-```
-
-Use `pi` or `opencode` instead of `codex` for the other harnesses.
+When the whole skills directory is linked, `git pull` exposes added skills automatically. With individual skill links, rerun the installer to add new directories. Existing linked files receive their updated contents from the stable checkout.
 
 ## Machine-specific configuration
 
-Keep machine-specific values, credentials, private service identifiers, and other secrets out of this repository.
+Factory's `profile.yaml` is optional and ignored by Git. Use [profile.example.yaml](skills/factory/profile.example.yaml) only for machine-specific provider/store/ranking bindings. Keep credentials in authenticated tools and private service IDs out of this public repository.
 
-If a skill needs machine-local configuration, keep a tracked `profile.example.yaml` (or equivalent template) and an ignored local `profile.yaml`. Do not commit secrets to this public repository.
+**Existing version-1 profiles need migration before Factory writes.** Git updates preserve the local file. Follow the [field mapping](skills/factory/references/profile.md#migrating-an-existing-version-1-profile): keep service bindings and required reviews, remove per-stage model/skill routing, and select the model in the host. Do not replace a work profile with the GitHub example. Read-only `status` remains available during migration.
+
+Native OpenSpec proposal/apply/archive skills and the OpenSpec CLI are external prerequisites when Factory reaches those actions. This repository does not install or replace them. Workflows under `workflows/` are targeted references, loaded only when useful.
+
+## Adding a skill
+
+Add `skills/<name>/SKILL.md`, keep its trigger narrow and its unique instructions short, then commit it. Store optional detailed references beside the skill. Keep machine-local configuration ignored and publish only safe example values.

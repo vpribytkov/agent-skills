@@ -1,125 +1,41 @@
-# Machine-local Software Factory profile template.
-# Copy to profile.yaml beside SKILL.md and customize for this computer.
-# profile.yaml is intentionally ignored by Git.
-# Bind the real external review checks and prioritization policy before use.
-
-version: 1
+# Optional machine-local bindings. Copy to profile.yaml only when needed.
+# profile.yaml is ignored by Git; keep credentials in authenticated tools.
+version: 2
 
 state:
-  provider: work_items
-
-execution:
-  concurrent_tasks: false
+  provider: work_items # Or filesystem, with an absolute directory below.
+  # directory: /absolute/path/to/factory-receipts
 
 work_items:
   provider: github
   identifiers:
-    owner: null
     repository: from_git_origin
-    project_id: null
-    status_field_id: null
-    status_options: {}
   operations:
-    read: 'Read the configured work item, comments, dependencies and linked PRs.'
-    candidates: |
-      Read all current candidate work items from the configured provider,
-      including pagination and dependency context needed to assess readiness.
-    active: 'Find unfinished factory-start records in the configured provider scope.'
-    record: 'Record durable factory receipts in the configured work-item system.'
-  transitions:
-    started: 'Record FACTORY START with item/repository/change/PR links as available.'
-    suspended: 'Record FACTORY SUSPENDED.'
-    ready_to_merge: 'Record READY TO MERGE with finalized PR and archive links.'
-    merged: 'No factory action by default; final merge remains human-controlled.'
+    read: 'Read the item, comments, dependencies and linked PRs.'
+    candidates: 'Read current candidate items with pagination and dependencies.'
+    active: 'Read unfinished job records before selecting a checkout.'
+    record: 'Update this item’s concise progress, approval and evidence record.'
+  transitions: {} # Optional exact provider actions; never implies merge.
 
 repository:
-  scope: current_checkout
-  worktree: when_parallel
-  openspec_store: null
-  context:
-    - AGENTS.md
-    - openspec/config.yaml
-    - openspec/specs/
   openspec_command: openspec
-  # Work example: '{item_lower}-{service}-{slug}'
-  # Leave null to let the proposal skill derive the change name normally.
+  openspec_store: null
   openspec_change_template: null
-  branch_template: 'issue/{item_number}-{slug}'
+  branch_template: '{item_lower}-{slug}'
+  context: [] # Additional project paths; applicable AGENTS.md always applies.
 
-prioritization_prompt: |
-  Replace this block with the exact prioritization policy for this machine.
-  /factory next must use it verbatim and must not invent a second ranking policy.
-
-blocks:
-  explore:
-    enabled: true
-    model: gpt-6.1-sol
-    reasoning: high
-    skills:
-      requirements: grill-with-docs
-      investigate: openspec-explore
-      propose: openspec-propose
-      summary: openspec-summarize-change
-      spec_review: openspec-review-change
-      revise: openspec-update-change
-
-  develop:
-    enabled: true
-    model: gpt-6-luna
-    reasoning: high
-    escalation:
-      model: gpt-6.1-sol
-      reasoning: high
-      when: Difficult cross-component or recovery work.
-    skills:
-      apply: openspec-apply-change
-      pr: create-pr
-    commands:
-      verify: 'Follow the current repository instructions and canonical verification commands.'
-
-  review:
-    enabled: true
-    model: gpt-6.1-sol
-    reasoning: high
-    skills:
-      review: ensemble-code-review
-
-  owner_review:
-    enabled: true
-    model: gpt-6.1-sol
-    reasoning: high
-    skills:
-      archive: openspec-archive-change
-    commands:
-      sync: 'Run the inline spec-sync workflow furnished by openspec-archive-change.'
+# Required only by /factory next. Replace null with your exact policy using |.
+prioritization_prompt: null
 
 review:
-  provider: skill_then_external
-  identifiers: {}
-  operations:
-    read: 'Read the whole local candidate, relevant untracked files, accepted change and verification against the resolved base.'
-    publish: 'Record local findings and PASS/CHANGES in the configured receipt store, bound to candidate contents and base.'
-  external:
-    provider: ci
-    identifiers:
-      required_review_checks: [] # Fill with actual review check IDs/names; empty is a blocker.
-      verdicts:
-        pending: 'A required review check is queued/running or its findings are not yet available.'
-        changes: 'Current published review requests changes under the configured priority scope.'
-        pass: 'All configured review checks accepted the current head/base with no outstanding required findings.'
-        failure: 'Missing checks, failed/cancelled runs, access errors, incomplete evidence or timeout are blockers.'
-    operations:
-      read: 'Read actual required review runs and published findings for the current PR head/base through the configured PR/CI provider.'
-      trigger: 'Use the existing PR/commit-triggered review; bind a supported explicit trigger if the repository requires one.'
-    poll_interval_seconds: 120
-    timeout_seconds: 3600
+  source: independent # A fresh reviewer; external is an explicit alternative.
+  skill: null # Optional explicit ensemble-code-review; not loaded by default.
+  required_checks: [] # Additional check names; repository-required checks still apply.
+  external: null # For source: external, bind provider/identifiers/operations here.
 
 pr:
   provider: github
   identifiers:
     repository: from_git_origin
     base: from_remote_default
-  operations:
-    read: 'Read the linked PR, head/base, draft state, reviews and required checks.'
-    update: 'Update the same PR with the current implementation and verification summary.'
-    ready: 'Mark the PR ready using the configured provider tooling.'
+  operations: {} # Optional provider-specific read/update/ready bindings.

@@ -1,37 +1,29 @@
 ---
 name: openspec-summarize-change
-description: Summarize a specification or OpenSpec change in up to 5 short technical statements, preserving mechanisms that materially increase implementation scope.
+description: "Use when asked for a concise technical summary of a specification or OpenSpec change, preserving ownership, costly mechanisms and relative implementation cost."
 ---
 
-Read the supplied specification and its available proposal, design, requirements, and tasks. Describe the requested change, not its completion status.
+# OpenSpec Summarize Change
 
-Return up to five concise technical bullets in the user's language.
-Use fewer when sufficient. Treat 40–60 words as a preference, not a cap: material interfaces, state-lifecycle decisions and behavior restrictions must remain visible. Each bullet describes one coherent change.
+Read the supplied specification and available proposal, requirements, design and tasks. Describe the requested change, not implementation status. Do not launch review or apply.
 
-- Name the component and concrete change in behavior, API, or responsibility.
-- Derive each bullet's owner from the project's actual service or component boundaries and use its name as the prefix. Do not invent service boundaries.
-- Keep one service or component owner per bullet. Do not combine implementation changes owned by different services or components merely because they implement the same feature.
-- Use `[CROSS-SERVICE]` only for contracts, migrations, compatibility, or recovery behavior that genuinely spans multiple services.
-- Name the main new or changed contracts and domain entities explicitly: endpoints, commands, events, configuration contracts, domain workflows, catalogs, durable records, or other first-class concepts. State whether each is added, extended, replaced, or removed.
-- Explicitly retain mechanisms that materially increase implementation scope, but attach them to the contract or entity they belong to: backward compatibility, state migration, crash recovery, partial continuation, durable execution evidence, cross-component coordination, runtime-derived catalogs, external runtime hooks, or separate operator recovery/reset workflows.
-- Prefix every summary bullet with owner and relative implementation cost: `[<owner>][LOW]`, `[<owner>][MEDIUM]`, or `[CROSS-SERVICE][HIGH · RISKY]`, using the actual owner name.
-- Use `[LOW]` for a local/simple extension with little state, migration, or recovery impact; `[MEDIUM]` for a bounded cross-component or persistent-state change; `[HIGH]` for a new durable workflow, migration, recovery, external runtime integration, or replacement of an existing execution path.
-- Add `· RISKY` when correctness materially depends on migration, crash/restart recovery, idempotency, irreversible mutation, or production-only behavior.
-- Rate each bullet itself, not the whole change. Cost is not code volume. Judge mechanisms by their actual role; do not treat every transaction, schema change, validation, or test as expensive. Do not estimate hours, story points, percentages, or monetary cost.
-- Distinguish mechanisms being added, reused, and removed.
-- Name each retained mechanism and its purpose. For material state changes, identify the owner and lifetime, including continued handling after the owning workflow completes. Omit incidental fields, classes, algorithms and individual test cases, not consequential ownership/lifecycle choices.
-- State material behavior restrictions: eligibility, mode-specific restrictions, behavior-changing defaults or fallbacks. Preserve required resets and compatibility boundaries.
-- Omit routine implementation details and ordinary tests, but explicitly name material new test-only or operator commands, endpoints, launcher flags and observation/comparison subsystems, with their purpose. Do not hide these additions behind "verification" or "runtime support".
-- Do not invent requirements or hide expensive scope to meet the length target. Do not pack mini-checklists into sentences.
-- If sources materially disagree about a main change or costly mechanism, state that briefly instead of silently choosing.
-- For API-facing changes, always state the API surface explicitly: name the affected endpoint(s) and method(s), and say whether they are added, changed, reused unchanged, or removed. If no new endpoint is introduced, say so when the change materially extends an existing contract.
+Return only up to five concise bullets in the user's language. Prefer 40–60 words overall, but retain material contracts, ownership and lifecycle decisions even when more words are needed. Each bullet covers one coherent change.
 
-Before returning, check that an engineer can identify:
-1. the affected API surface and whether endpoints are added or changed;
-2. the main changed contracts and domain entities;
-3. what is added, extended, replaced, or removed;
-4. the costly mechanisms attached to those changes;
-5. the relative implementation cost of each bullet;
-6. a single clear service or component owner for each bullet, except genuinely cross-service work.
+## Content
 
-Output only the concise description.
+- Prefix with the actual service/component owner and relative cost: `[<owner>][LOW]`, `[<owner>][MEDIUM]` or `[<owner>][HIGH · RISKY]`. Keep one owner per bullet; use `[CROSS-SERVICE]` only for genuinely shared contracts, migrations or recovery. Do not invent service boundaries.
+- Name the main contracts and domain entities, and whether they are added, extended, replaced, reused or removed. For APIs, name methods/endpoints and whether each is new, changed, unchanged or removed; say when an existing contract expands without a new endpoint.
+- Attach costly mechanisms to their contract and purpose: compatibility, migration, crash recovery, continuation, durable evidence, coordination, runtime-derived catalogs, external hooks or separate operator recovery/reset workflows. Distinguish adding a mechanism from reusing or removing it.
+- Preserve consequential state ownership and lifetime, including behavior after the owning workflow completes. State eligibility/mode restrictions, behavior-changing defaults/fallbacks, required resets and compatibility boundaries.
+- Name substantial new testing/operator commands, endpoints, launcher flags or observation/comparison systems and their purpose; do not hide them behind “verification” or “runtime support”. Omit routine tests, fields, classes and incidental algorithms.
+- State material source contradictions instead of silently choosing. Do not add requirements or hide expensive scope to meet the length preference.
+
+## Cost labels
+
+- `LOW`: local/simple extension with little state, migration or recovery impact.
+- `MEDIUM`: bounded cross-component or persistent-state change.
+- `HIGH`: new durable workflow, migration, recovery, external runtime integration or replacement of an execution path.
+- Add `· RISKY` when correctness materially depends on migration, crash/restart recovery, idempotency, irreversible mutation or production-only behavior.
+
+Rate each bullet's actual mechanisms, not code volume; ordinary transactions, schema changes or tests are not automatically expensive. Do not estimate hours, story points, percentages or money.
+Before returning, check that the affected API/contracts, change direction, costly mechanisms, owner and per-bullet cost remain visible.
