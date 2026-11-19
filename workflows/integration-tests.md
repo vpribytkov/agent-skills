@@ -1,172 +1,34 @@
-# Go integration test workflow
+# Go integration tests
 
-Use this workflow for Go integration tests, DB-backed tests, repository integration tests, and service tests that verify database behavior.
+Use for Go tests that cross a database, repository, or service boundary. Follow
+nearby tests and the repository's existing commands, fixtures, and build tags.
 
-Integration tests should make the input → behavior → observable DB result clear.
+## Cover the actual boundary
 
-## Test shape
+- Use storage/repository integration for isolated SQL, mapping, constraints, or persisted fields.
+- Exercise the service path when the risk involves orchestration, transaction boundaries, repository-manager wiring, rollback, old/new decisions, no-op behavior, or duplicate side effects. Unit and storage checks do not prove those service behaviors.
+- Derive expected outcomes from the behavior contract. Make initial data, action, expected persisted state, and error/no-error result visible in the scenario.
+- Prefer named table cases for related scenarios when they remain readable; follow the closest suitable local structure.
+- Assert observable state with a direct `SELECT` or existing repository read. Do not use private implementation details or diagnostic messages as proof of persistence or rollback.
 
-Prefer table-driven integration tests.
+## Reuse fixtures and infrastructure
 
-For a method or behavior, use one test function with multiple cases instead of separate test functions per scenario.
+- Use the real DB/repository for the boundary under test. Reuse existing setup and cleanup; keep ownership of persistent fixtures and action-created data clear.
+- Keep domain inputs and expected results in the test body. Let helpers hide setup plumbing, not the business outcome.
+- Mock only dependencies outside the integration concern, such as an external service, publisher, or nondeterministic boundary.
+- Reuse nearby generated mocks or fakes. If a new mock is needed, inspect generated files, build targets, and generation configuration for the project's standard generator; use bespoke mocks only where local practice or unavailable generation warrants them.
 
-Prefer:
+## Run and inspect
 
-```go
-func TestService_ProcessIntegration(t *testing.T) {
-    cases := []struct {
-        name    string
-        prepare func(ctx context.Context, t *testing.T, deps testDeps) input
-        input   input
-        want    expectedResult
-        wantErr require.ErrorAssertionFunc
-    }{
-        ...
-    }
-
-    for _, tc := range cases {
-        t.Run(tc.name, func(t *testing.T) {
-            ...
-        })
-    }
-}
-```
-
-Avoid creating separate top-level test functions for each case when they test the same method or integration behavior.
-
-Avoid:
-
-```go
-TestService_ProcessIntegration_persistsExpectedState
-TestService_ProcessIntegration_skipsInvalidInput
-TestService_ProcessIntegration_rollsBackOnStaleState
-```
-
-Prefer:
-
-```go
-TestService_ProcessIntegration
-```
-
-with named table cases:
-
-```go
-"persists expected state"
-"skips invalid input"
-"rolls back on stale state"
-```
-
-## Scenario readability
-
-Each table case should make the scenario clear:
-
-* what data exists before the action;
-* what input is passed to the method;
-* what observable DB result is expected;
-* what error or no-error behavior is expected.
-
-Keep domain-relevant input and expected values visible in the test body.
-
-Use `prepare`, `assert`, or fixture helpers only to hide boring plumbing, not the core scenario.
-
-Do not hide the expected business result inside broad helper functions.
-
-## Database assertions
-
-Integration tests should verify observable behavior through the database or public repository/service behavior.
-
-When the purpose is DB behavior, prefer checking the result with a direct `SELECT` or existing repository read that clearly reflects the persisted state.
-
-Do not assert private implementation details.
-
-Do not test private helpers directly.
-
-## Fixtures and cleanup
-
-Make fixture ownership explicit.
-
-Separate:
-
-* persistent fixture data that needs cleanup;
-* action data created by the method under test;
-* external boundary expectations;
-* rollback-only setup.
-
-Register cleanup close to the data it owns, or return a fixture object that owns cleanup.
-
-Avoid mixing persistent fixture setup and action-specific setup into one unclear setup block.
-
-## Mocks in integration tests
-
-Avoid mocks in integration tests by default.
-
-Use real DB/repository behavior for the integration boundary being tested.
-
-Mocks are allowed only for dependencies outside the integration concern, such as:
-
-* external services;
-* message publishers;
-* clients unrelated to the DB behavior under test;
-* expensive or unavailable infrastructure;
-* nondeterministic boundaries such as time, network, or async side effects.
-
-Before adding a mock:
-
-1. Search for an existing mock or fake used by nearby tests.
-2. Prefer reusing existing generated mocks.
-3. If a new mock is required, generate it using the project's standard tooling.
-4. Do not hand-write bespoke mocks unless nearby project tests already use that pattern or generation is unavailable.
-
-Prefer the project's existing mock-generation workflow.
-
-If unsure which generator is standard, inspect nearby generated mocks, build targets, code-generation configuration, or project instructions before creating a mock.
-
-## Existing pattern first
-
-Before writing or changing an integration test, inspect nearby integration tests for:
-
-* test function naming;
-* table-driven case structure;
-* fixture setup;
-* cleanup pattern;
-* DB assertion style;
-* mock usage;
-* generated mock location;
-* integration build tags or command style.
-
-Follow the closest existing pattern unless it is clearly incompatible with the task.
-
-## Verification
-
-Run the narrowest reliable integration test command first.
-
-Prefer targeted commands such as:
+Use the repository's narrowest reliable command. For repositories using the
+`integration` build tag, a typical targeted command is:
 
 ```bash
-go test -tags=integration ./path/to/package -run TestService_ProcessIntegration
+go test -tags=integration ./path/to/package -run '^TestService_ProcessIntegration$' -count=1 -v
 ```
 
-Then broaden only when needed.
-
-If mock generation changed files, run the relevant generator and include generated files only when they are required.
-
-Before finishing, verify:
-
-* the integration test is table-driven when it covers multiple scenarios for the same method;
-* expected values are visible at the test case level;
-* mocks are avoided unless justified;
-* any new mock follows existing generated mock patterns;
-* cleanup ownership is clear;
-* focused integration tests pass or skipped verification is explained.
-
-## Coverage level
-
-Use the narrowest integration level that covers the actual risk.
-
-Storage/repository integration is enough for isolated SQL, mapping, constraint, or persisted-field behavior.
-
-Service-level integration is expected when risk involves service orchestration, transaction boundaries, repo-manager wiring, rollback, old/new decisions, skipped/no-op/status-only behavior, or duplicate side-effect prevention.
-
-Unit tests + storage integration do not replace service-level integration unless there is concrete evidence that the service layer adds no relevant orchestration/transaction/wiring/rollback risk.
-
-If that evidence is missing, absent service-level integration is a readiness gap, not polish.
+Check that the intended tests actually ran with the required infrastructure.
+A successful exit with no matching tests or skipped DB setup is not a pass.
+Run the relevant generator if mock definitions changed and include required generated
+files. Broaden verification only for an affected boundary or a repository requirement.
+Report the command, actual result, and any infrastructure or coverage gap.

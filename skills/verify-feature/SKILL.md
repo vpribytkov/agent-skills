@@ -1,24 +1,23 @@
 ---
 name: verify-feature
-description: Verify that implemented changes deliver an approved feature or milestone.
+description: "Use when explicitly asked to verify an implemented feature or milestone against approved acceptance, especially across multiple changes. Not an automatic gate for each code change."
 ---
 
 # Verify Feature
 
-The user needs to check whether implemented changes deliver the intended feature or milestone.
-Verify their combined result against approved requirements, not just individual PRs.
+Verify the combined implemented result against approved requirements. Respect exclusions; do not repair, expand scope or change production without authorization. PASS does not authorize deployment or replace owner approval.
 
 ## Check
-1. Read the request, approved scope and project rules. Derive acceptance criteria from requirements, not implementation; use the to-changes map if available. If requirements or necessary context remain unclear after checking available sources, ask the user instead of guessing and pause dependent checks.
-2. Inspect current code/tests, relevant archived OpenSpec changes and recorded verification results. Match each criterion to evidence; check omissions and gaps between changes/services. Completed tasks or historical PASS verdicts are not proof by themselves; reuse results only when relevant inputs and assumptions remain valid.
-3. Before running checks, show the acceptance map: criterion and source → expected result → reusable evidence or planned check. Wait for map approval when explicitly requested.
-4. Run only missing or invalidated authorized checks with existing tools. Choose the cheapest sufficient layer; require full E2E only where narrower checks are insufficient.
-5. Probe the most plausible failure through its result and next system decision. Distinguish inspection, mocks and real execution.
+
+1. Read the request, approved scope and project rules. Derive acceptance from requirements, not implementation; reuse a `to-changes` map if available. Resolve discoverable context first, then ask only for consequential missing decisions and pause dependent checks.
+2. Inspect current code/tests, relevant archived OpenSpec changes and recorded results. Match criteria to evidence and inspect gaps between changes/services. Completed tasks and historical PASS labels are not proof. Reuse results only while relevant revisions, inputs and assumptions remain valid.
+3. Before execution, present criterion/source → expected result → reusable evidence or planned check. Wait for approval only when the user requested it.
+4. Run only missing or invalidated authorized checks with existing tools at the cheapest sufficient layer. Use real runtime/service proof where those semantics determine the outcome; use full end-to-end checks only when narrower evidence is insufficient.
+5. Probe the most plausible failure through its actual result and next system decision. Distinguish inspection, mocks and real execution; do not report skipped, failed or unknown checks as passed.
 
 ## Return
-- Evaluated feature/milestone, revisions and environment.
-- The same acceptance map, updated with actual evidence (commands/results), results and limitations.
-- PASS: all required criteria proven; FAIL: observed violation; BLOCKED: missing required evidence/decision.
-- Gaps and smallest next action.
 
-Respect approved exclusions. No repairs, scope expansion or production changes without approval. PASS does not authorize deployment or replace owner approval.
+- Feature/milestone, evaluated revisions and environment.
+- Updated acceptance map with actual evidence, commands/results, criterion status and limitations; identify reused evidence and its scope.
+- `PASS`: all required criteria proven. `FAIL`: an observed requirement violation. `BLOCKED`: required evidence or a decision is missing.
+- Remaining gaps and the smallest next action.

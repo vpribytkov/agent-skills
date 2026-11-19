@@ -1,4 +1,4 @@
 interface:
   display_name: "Create PR"
-  short_description: "Verify changes and open a draft pull request"
-  default_prompt: "Use $create-pr to verify local changes and open a draft pull request."
+  short_description: "Prepare changes and open a draft pull request"
+  default_prompt: "Use $create-pr to prepare the current changes and open a draft pull request."

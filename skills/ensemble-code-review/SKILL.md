@@ -1,211 +1,50 @@
 ---
 name: ensemble-code-review
-description: "Run three independent read-only review passes over the same frozen candidate: OpenSpec verification, full code review, and a minimally framed raw review. Aggregate validated material findings into one PASS/CHANGES result for Factory or direct use."
+description: "Use only when explicitly requested to combine three independent review perspectives over a frozen candidate. Optional deeper review, not the default code-review path."
 ---
 
 # Ensemble Code Review
 
-Use this skill when a single review result should combine three independent perspectives over the same exact candidate.
+## Candidate and independence
 
-## Contract
+- Resolve each repository's identity, checkout path, exact base and head, PR link if present, accepted intent/OpenSpec change or store, and dependency contract versions. Treat all participating heads as one frozen candidate set.
+- Keep the run read-only: no source, tests, OpenSpec artifacts, branches, PR metadata/comments or receipts change during review.
+- Run A, B and C for **every** repository as fresh native subagents with `fork_turns="none"`. Inherit the caller's actual selected runtime model and reasoning; do not pin or invent model versions.
+- Respect concurrency limits; run passes sequentially when needed without dropping perspectives. If independent delegation or required access is unavailable, report a blocker.
+- Reviewers read the target checkout's applicable project instructions and use explicit workdir paths. Do not share the parent conversation or other reviewers' findings, including findings from another repository.
 
-Input identifies one change's set of repository-scoped candidates (a single
-repository remains valid). For each candidate provide:
-
-- repository identity and checkout path;
-- exact base revision;
-- exact head revision;
-- PR link when one exists;
-- associated accepted OpenSpec change/store, shared by the set, when one exists;
-- known inter-repository dependencies and contract versions.
-
-Treat the entire candidate set as frozen for the run. Do not modify source, tests, OpenSpec artifacts, PR metadata, comments, branches, or receipts while the review passes are running.
-
-The goal is maximum defect recall before repair, not agreement between reviewers.
-
-## Required delegation
-
-The review executor must have native subagent delegation available.
-Run A/B/C for every repository: two repositories require six passes.
-Sequential execution is allowed and must respect the caller's concurrency limits;
-never drop a perspective to fit those limits.
-
-Start each pass as a fresh native subagent with `fork_turns="none"`, preserving
-the model/reasoning below. Reviewers load the target checkout's applicable project
-instructions and use explicit workdir paths. Keep every pass read-only. Do not
-pass the parent conversation or findings between independent reviewers, including
-reviewers of different repositories.
-
-If required independent delegation, model/reasoning or permission requirements
-cannot be met, report a blocker rather than degrade the review.
+## Three passes
 
 ### A. OpenSpec verification
 
-Model: `gpt-6.1-sol`
-Reasoning: `high`
-
-Task:
-
-- Resolve and use the installed `openspec-verify-change` skill.
-- Verify this repository's assigned part of the shared accepted OpenSpec change/store;
-  neighboring tasks provide contract context, not missing local implementation.
-- Use the same repository/base/head boundary as its other reviewers and exact
-  dependency versions supplied with the candidate set.
-- Do not implement, repair, archive, sync, or mutate anything.
-- Return verification issues and explicit limitations only.
-
-This pass answers primarily: did this part completely and coherently realize its
-accepted obligations, including its side of shared contracts?
-
-If the task legitimately has no associated OpenSpec change, return `NOT_APPLICABLE` with the reason. If the repository uses OpenSpec but the relevant change is ambiguous or unavailable, treat that as a review limitation/blocker rather than guessing.
+Use the installed upstream `openspec-verify-change` skill against the exact candidate and dependencies. Check this repository's assigned obligations and its side of shared contracts; neighboring tasks supply context, not missing local implementation. Return issues and limitations without applying, repairing, syncing or archiving.
+Return `NOT_APPLICABLE` only when the task legitimately has no OpenSpec change. An expected but missing or ambiguous change is a limitation/blocker.
 
 ### B. Full code review
 
-Model: `gpt-6.1-sol`
-Reasoning: `high`
-
-Task:
-
-- Resolve and use the installed `code-review-skill`.
-- Review the whole repository candidate against the exact base/head, its repository instructions, work item, shared accepted intent/change/store, known dependencies and applicable verification evidence.
-- Audit the necessity of each meaningful behavior change: identify the agreed
-  obligation that would fail without it, or the candidate-introduced regression
-  it prevents. A broad requirement label or "more robust" is not sufficient;
-  respect explicit exclusions and behavior the owner asked to preserve.
-- Check the exact base before recommending a fix. Distinguish candidate defects
-  from unrelated pre-existing problems and optional improvements. An old defect
-  belongs in the repair scope only with evidence that it blocks an agreed obligation.
-- Report unnecessary candidate changes as findings requesting removal or restoration
-  of base behavior, not further improvements. Implementation details need not be
-  prescribed by the spec, but their necessity must be explainable without adding
-  requirements to justify the candidate.
-- Preserve the review skill's normal integration/system tracing behavior.
-- Do not mutate anything.
-- Return material candidate findings, separate baseline/improvement observations,
-  verdict, and explicit unresolved limitations.
-
-This is the primary system/code review pass.
+Use the installed `code-review-skill` over the exact base/head, work item, accepted intent, dependencies and applicable verification evidence. Preserve its integration/system tracing.
+Check each meaningful behavior change against an agreed obligation or a candidate-introduced regression it prevents. Respect exclusions; do not invent requirements to justify extra machinery.
+Check the exact base before proposing a fix. Separate candidate defects from unrelated pre-existing problems and optional improvements. A pre-existing defect belongs in repair scope only when it demonstrably blocks an agreed obligation. Request removal of unnecessary candidate behavior instead of extending it further.
+Return material findings, verdict, separate baseline/improvement observations and unresolved limitations.
 
 ### C. Raw review
 
-Model: `gpt-6.1-sol`
-Reasoning: `medium`
+Supply only repository identity/path, exact base/head and PR link if present. Task text is `Review this PR.` or `Review this change.`
+Do not preload either A/B review skill, accepted-intent/verification prose, Factory payloads or findings. Do not seed checklists, finding quotas or target failure classes. The reviewer may independently inspect repository-visible artifacts.
 
-Do not load `code-review-skill`, `openspec-verify-change`, Factory review payload, findings from A/B, or accepted-change/verification prose unless the reviewer independently chooses to inspect repository-visible artifacts.
+## Validate and aggregate
 
-Give only:
+Wait for all three results for every repository before aggregation or repair.
+On a rerun, reuse a pass only while its exact local candidate, accepted obligations and dependent contracts remain unchanged; identify reused coverage. Joint evidence must match the current participating heads.
 
-- repository identity and checkout path;
-- exact base;
-- exact head;
-- PR link if one exists.
+1. Bind every result to its repository and exact base/head; a different candidate is stale coverage.
+2. Deduplicate underlying failure paths across repositories while preserving the originating repository/pass. Do not discard a finding because only one reviewer found it.
+3. Validate findings against code, the exact base and accepted scope. Confirm both the failure and why its repair belongs in this change. Apply the caller's materiality threshold only after validation.
+4. Separate confirmed candidate defects (including unnecessary changes), unrelated baseline/improvement observations, non-blocking spec/test notes, unsupported concerns and verification limitations. Unrelated observations do not become required repairs regardless of priority.
+5. Check joint compatibility using actual producer/consumer evidence at the exact head tuple; separate local passes do not prove it. State what was traced or exercised and any gaps. Invalidate only affected passes and joint checks when a candidate or contract changes.
 
-Task text:
+## Return
 
-- when a PR link exists: `Review this PR.`
-- otherwise: `Review this change.`
-
-Do not add a checklist, minimum finding count, target failure categories, or instructions such as "find material issues".
-
-This pass intentionally provides an independent, minimally framed search trajectory.
-
-## Aggregate
-
-Wait for current results from all three perspectives for every repository before
-aggregation or repair. A completed pass may be reused only while its exact local
-candidate, accepted obligations and dependent contract inputs remain unchanged;
-identify reused coverage explicitly. Joint checks must match the current head tuple.
-
-The parent review executor owns aggregation:
-
-1. Bind every result to its repository and exact base/head. Results from a different
-   candidate are stale, not completed coverage.
-2. Deduplicate by underlying failure path within repositories and across their
-   boundaries, not wording; preserve the originating repository/pass for each source.
-3. Validate proposed material findings against production code, the exact base and
-   agreed task intent before returning them, especially findings from the raw reviewer.
-   Confirm both the defect and why its repair belongs in this change. A problem's
-   existence or priority alone does not authorize expanding the task. Do not justify
-   an extra behavior change by requirements added to explain the implementation.
-4. Do not discard a finding merely because the other reviewers did not report it.
-5. Distinguish:
-   - confirmed material candidate finding, including unnecessary changes whose
-     removal restores the agreed scope;
-   - unrelated pre-existing problem or optional improvement: report only as a
-     non-blocking observation, not a candidate finding or required repair;
-   - non-blocking spec/test-quality note;
-   - unsupported/false-positive concern;
-   - explicit verification limitation.
-6. Apply the caller's configured priority/materiality threshold to validated
-   candidate findings only, after exploration and validation, not while deciding
-   which child findings to inspect. Baseline/improvement observations do not block
-   PASS or become repair tasks, regardless of priority; rejecting an unnecessary
-   candidate change remains an in-scope finding.
-7. Validate inter-repository compatibility against the exact participating heads
-   (for example `head-backend` + `head-frontend`), using shared contracts and actual
-   producer/consumer evidence. Record what was traced or exercised and any gaps;
-   separate local PASS results do not prove joint compatibility. Do not credit a
-   child for a boundary finding discovered only during aggregation. If a contract
-   changes, invalidate affected dependent results and joint checks, not unrelated
-   checks; revalidate the changed repository's candidate before a new verdict.
-
-## Verdict
-
-Return one overall PASS/CHANGES result for the whole candidate set to the caller.
-
-- `CHANGES` when at least one confirmed finding meets the caller's blocking/materiality threshold.
-- `PASS` only when no such finding remains and no unresolved limitation materially prevents that conclusion.
-- An OpenSpec `NOT_APPLICABLE` result does not block PASS by itself when the task legitimately has no OpenSpec change.
-- A failed/missing required repository part, child review or necessary joint
-  compatibility check is a limitation/blocker, never implicit PASS.
-
-Keep the final output concise, but always include a source matrix after parent validation.
-
-1. Verdict: PASS / CHANGES
-2. Confirmed material findings, highest impact first
-3. Reviewer coverage matrix
-4. Reviewer summary
-5. Relevant non-blocking notes only when useful
-6. Verification limitations, if any
-7. Which independent passes completed per repository: OpenSpec / code-review / raw;
-   exact heads and evidence for joint compatibility
-
-### Reviewer coverage matrix
-
-Build one row per normalized underlying failure path after deduplication and validation.
-Do not create separate rows for wording variants of the same defect.
-
-Use:
-
-| Repository / boundary | Finding | OpenSpec verify | Code review | Raw | Status |
-| --- | --- | :---: | :---: | :---: | --- |
-| <repo or repo A → repo B> | <normalized failure path> | ✓ / — | ✓ / — | ✓ / — | confirmed / non-blocking / unsupported |
-
-Rules:
-
-- `✓` means that reviewer independently identified that failure path in its own result.
-- `—` means it did not.
-- For boundary findings, identify the originating repository session beside each
-  `✓`; do not imply both repositories' reviewers found it.
-- `confirmed` means the parent validated the issue as real and material under the caller's threshold.
-- `non-blocking` means real but below the blocking/materiality threshold.
-- `unsupported` means the parent could not validate the concern or determined it was a false positive.
-- Do not give a reviewer credit merely because it inspected the same file or adjacent code.
-- Count uniqueness only after normalization and validation.
-
-### Reviewer summary
-
-Always add a compact per-reviewer summary using validated rows:
-
-| Repository | Reviewer | Confirmed | Unique confirmed | Non-blocking | Unsupported |
-| --- | --- | ---: | ---: | ---: | ---: |
-| <repo> | OpenSpec verify | N | N | N | N |
-| <repo> | Code review | N | N | N | N |
-| <repo> | Raw | N | N | N | N |
-
-A confirmed finding is unique when exactly one repository/reviewer session
-identified its normalized failure path across the whole candidate set.
-
-This matrix is part of the normal review result so the caller can judge the marginal value of each independent pass across real PRs. Do not persist a separate historical ledger or cumulative telemetry unless explicitly requested.
-
-Do not expose hidden chain-of-thought or create a separate review ledger.
+- One overall `CHANGES` when a confirmed candidate finding meets the blocking threshold; `PASS` only when none remains and required coverage is complete. If a required pass, repository part or joint check is missing, report the review as blocked without a PASS verdict. Legitimate OpenSpec `NOT_APPLICABLE` alone does not block PASS.
+- Candidate revisions, confirmed findings in priority order with evidence and originating passes, completed/reused pass status per repository, joint compatibility evidence and material limitations.
+- Include useful non-blocking observations separately. Keep reporting compact; add reviewer-value counts or a matrix only when requested, based on independently found, deduplicated and validated issues. Do not credit a child for a boundary finding discovered only during aggregation.
