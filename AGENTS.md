@@ -19,9 +19,11 @@
 
 ## Coding Quality
 
-- Make distinct business outcomes explicit in simple control flow.
-- Keep related logic and state together so behavior is understandable locally.
-- Keep each business decision's logic in one place.
+- **Explicit Decisions** — express distinct business outcomes as clear, readable branches.
+- **Minimize Reader Load** — avoid unnecessary indirection, hidden state, and fragmented logic.
+- **Laziness Protocol** — write the least code needed; reuse existing solutions and avoid speculative abstractions.
+- **Same Abstraction Level** — keep each function at a coherent level of abstraction.
+- **Useful Helpers Only** — avoid tiny helpers that merely wrap or rename code without adding meaning.
 
 ## Guardrails
 
