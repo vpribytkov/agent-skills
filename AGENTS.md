@@ -24,6 +24,7 @@
 - **Laziness Protocol** — write the least code needed; reuse existing solutions and avoid speculative abstractions.
 - **Same Abstraction Level** — keep each function at a coherent level of abstraction.
 - **Useful Helpers Only** — avoid tiny helpers that merely wrap or rename code without adding meaning.
+- **Early Returns** — prefer guard clauses and early returns to avoid unnecessary nesting.
 
 ## Guardrails
 
