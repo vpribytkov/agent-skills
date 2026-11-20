@@ -16,7 +16,12 @@
 - Verify the claimed outcome from actual results or artifacts, not just success messages, file existence, HTTP status, or another agent's summary. For code changes, re-run relevant checks on the final working-tree state.
 - For test-based verification, confirm that relevant tests actually ran. Failed, skipped, not-run, or unknown checks must not be reported as passed; state the actual result and any verification gap.
 - Derive test expectations from independent requirements or behavioral contracts. Do not merely mirror implementation constants, configuration values, or lookup-table contents unless their exact values are themselves required by the contract.
-- **Coding Quality** — for any task that involves designing, writing, modifying, or reviewing repository code, load and apply the `coding-quality` skill before making implementation decisions. Explicit requirements, repository rules, and compatible local patterns take precedence; do not expand scope solely to satisfy the skill.
+
+## Coding Quality
+
+- Make distinct business outcomes explicit in simple control flow.
+- Keep related logic and state together so behavior is understandable locally.
+- Keep each business decision's logic in one place.
 
 ## Guardrails
 
